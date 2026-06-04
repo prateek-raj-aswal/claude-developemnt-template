@@ -46,12 +46,14 @@ memory:
     - context/tech-stack.html
     - context/project-brief.html
     - context/constraints.html
+    - context/feature-decisions.html            # check prior decisions before designing
   writes:
     - .claude/memory/architecture/system-design.yaml
     - .claude/memory/stories/{story_id}/contracts.json
     - docs/architecture/hld.html
     - docs/architecture/diagrams/hld.drawio
     - docs/architecture/flows/
+    - context/feature-decisions.html            # Section 4: architectural decisions
 
 tools_allowed: [Read, Write, Edit, Grep, Glob]
 can_invoke: [auditor]   # invokes auditor REVIEW (Design) gate between DESIGN and EXTRACT

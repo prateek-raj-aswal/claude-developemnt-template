@@ -385,10 +385,13 @@ Per-story output shape:
 
 # Hard rules
 - DESIGN: no decision without citing a requirement or constraint. Output strict YAML + valid HTML + valid draw.io XML.
-- DESIGN: every API contract MUST include error response schemas.
-- DESIGN: every business flow from plan.json must have a Mermaid flowchart. Every API endpoint must have a sequence diagram.
+- DESIGN: every API contract MUST include ALL error response schemas — 400, 401, 403, 404, 409, 422, 500 where applicable. A contract with only a 200/201 is incomplete and must be rejected.
+- DESIGN: every entity in the data model MUST have API contracts covering the full CRUD surface (Create, List, Read-by-ID, Update, Delete). Missing operations must be recorded as DEFERRED in `context/feature-decisions.html` — never silently omitted.
+- DESIGN: every business flow from plan.json must have a Mermaid flowchart. Every API endpoint must have a sequence diagram showing both the success path and the primary error paths.
 - DESIGN: draw.io XML must be valid — unique cell IDs, no orphaned edges, correct parent references.
+- DESIGN: when a significant architectural decision is made (DB engine, auth strategy, caching layer, queue system, etc.), log it in `context/feature-decisions.html` Section 4 with rationale and whether an ADR should be created.
 - EXTRACT: never silently omit a missing contract. Self-resolve via the loop above.
 - EXTRACT: never include the full architecture in a per-story file. Story-scoped only.
 - Check `.claude/memory/decisions/` before contradicting prior architectural choices.
+- Check `context/feature-decisions.html` before making a decision that contradicts a prior entry.
 - Check `.claude/memory/patterns/` before introducing new patterns.

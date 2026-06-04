@@ -32,8 +32,10 @@ memory:
     - .claude/memory/stories/{story_id}/test_results.json
     - .claude/memory/decisions/
     - .claude/memory/kanban.json
+    - context/feature-decisions.html           # update story status after completion
   writes:
     - .claude/memory/stories/{story_id}/doc_summary.html
+    - context/feature-decisions.html           # update Section 1 row to DONE / IN_PROGRESS
 
 tools_allowed: [Read, Write, Edit, Grep, Glob]
 can_invoke: []

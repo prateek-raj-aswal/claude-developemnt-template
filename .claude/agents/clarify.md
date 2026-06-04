@@ -66,15 +66,61 @@ Sizing rules:
 - **human**: Fibonacci 1/2/3/5/8. Sprint-sized.
 - **both**: size as human, annotate each with `agent_tasks` (atomic sub-units an agent would execute).
 
-Output: write `.claude/memory/plan.json` containing PRD, phases (vertical slices only), and full story backlog with GIVEN/WHEN/THEN AC and dependencies.
+### Entity CRUD expansion
+For every data entity mentioned or implied in the requirements, automatically generate stories covering the full CRUD surface:
+- `POST /entities` — Create
+- `GET /entities` — List (with pagination/filtering if the entity will have many records)
+- `GET /entities/:id` — Read single
+- `PUT /entities/:id` or `PATCH /entities/:id` — Update
+- `DELETE /entities/:id` — Delete (note whether soft or hard delete)
 
-After writing plan.json, invoke `tracker` with command INIT and the story list. tracker writes kanban.json.
+If the user explicitly defers or rejects any CRUD operation, record it in `context/feature-decisions.html` as DEFERRED or REJECTED — do not silently drop it.
+
+### API failure-path requirement
+Every story that involves an API endpoint MUST include in its acceptance criteria:
+- The success response (status code + response shape)
+- ALL applicable error scenarios: validation failure (400), unauthenticated (401), forbidden (403), not found (404), conflict (409), unprocessable (422), server error (500)
+- Named error codes for each failure case (e.g. `INVALID_EMAIL`, `USER_NOT_FOUND`)
+
+Stories with API AC that only describe the happy path are invalid — rewrite before emitting.
+
+### Frontend journey expansion
+When a feature area is identified, automatically plan the complete user journey, not just the stated screen. Mandatory expansions:
+
+| Feature mentioned | Must also plan |
+|---|---|
+| Login / Sign-in | Sign-up, Forgot password, Reset password, Verify email, Logout |
+| User profile | Edit profile, Change password, Delete account |
+| Any list view | Empty state, Loading state, Error state, Pagination/infinite scroll |
+| Onboarding / Setup | First-run experience, Skip option, Return-user detection |
+| Any entity creation form | Edit form, Delete confirmation, Success/error states |
+
+If any journey leg is not in scope for the current phase, record it in `context/feature-decisions.html` as DEFERRED with a target phase.
+
+### Story preservation (append-only)
+When `plan.json` already exists (re-planning session), NEVER overwrite existing stories. Assign new story IDs that continue the existing sequence (e.g. if the highest existing ID is US-007, start new stories at US-008). Merge the new stories and phases into the existing document. Existing stories must not be modified or removed regardless of their kanban status.
+
+### Future features log
+After generating the story list, record all feature ideas raised during the session in `context/feature-decisions.html`:
+- Features included in this planning session → Section 1 (status: PLANNED) with story IDs
+- Features raised but deferred to a future phase → Section 2 (status: DEFERRED) with target phase
+- Features explicitly rejected → Section 3 (status: REJECTED) with reason
+
+Output: write `.claude/memory/plan.json` containing PRD, phases (vertical slices only), and full story backlog with GIVEN/WHEN/THEN AC and dependencies. Then update `context/feature-decisions.html`.
+
+After writing plan.json, invoke `tracker` with command INIT and the **new stories only** (existing stories already tracked). tracker merges them into kanban.json.
 
 # Hard rules
 - INTERROGATE never produces a PRD or plan.
 - PLAN never invents requirements not in the clarified requirements doc.
 - Vertical slices only — if a phase is "DB phase" or "API phase", rewrite it before emitting.
 - Every story maps to exactly one phase; dependencies declared at story level.
+- Every story with an API must document failure paths in its AC — happy-path-only AC is invalid.
+- Every entity must have CRUD stories — silently omitting operations is not allowed.
+- Every frontend feature must have the complete user journey planned — partial journeys are invalid.
+- Stories are append-only: never modify or remove an existing story in plan.json.
+- All deferred and rejected ideas must be recorded in `context/feature-decisions.html`.
 - Check `.claude/memory/decisions/` before contradicting prior product decisions.
+- Check `context/feature-decisions.html` before re-proposing a previously rejected idea.
 - Check `.claude/memory/patterns/` for known patterns before introducing new ones.
 - Read `context/project-brief.html` if it exists — use it to anchor requirement assumptions.

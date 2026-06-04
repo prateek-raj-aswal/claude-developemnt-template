@@ -19,23 +19,31 @@ modes:
     inputs:
       - execution_mode: agent | human | both   # asked from user, gates story sizing
     outputs:
-      - .claude/memory/plan.json             # PRD + phases + stories with AC + dependencies
-      - .claude/memory/kanban.json           # via tracker INIT
+      - .claude/memory/plan.json             # PRD + phases + stories with AC + dependencies (append-only)
+      - .claude/memory/kanban.json           # via tracker INIT (merge, not overwrite)
+      - context/feature-decisions.html       # planned features (S1), deferred ideas (S2), rejected ideas (S3)
     prerequisites:
       - .claude/memory/requirements.html exists with verdict: ALIGNED
     error_modes:
       - MISSING_REQUIREMENTS: requirements.html absent — run /align first
       - UNALIGNED_REQUIREMENTS: requirements present but verdict != ALIGNED
       - HORIZONTAL_PHASE: a generated phase is a horizontal layer (DB-only / API-only) — must rewrite as vertical slice
+      - MISSING_CRUD: an entity was planned without full CRUD story coverage and no DEFERRED record
+      - INCOMPLETE_JOURNEY: a frontend feature was planned without the complete user journey and no DEFERRED record
+      - MISSING_ERROR_AC: a story with an API endpoint has no failure-path acceptance criteria
 
 memory:
   reads:
     - .claude/memory/requirements.html   # PLAN mode
+    - .claude/memory/plan.json           # PLAN mode — for append/merge
     - .claude/memory/decisions/          # both modes
     - .claude/memory/patterns/           # PLAN mode
+    - context/feature-decisions.html     # both modes — avoid re-proposing rejected ideas
+    - context/project-brief.html         # PLAN mode
   writes:
     - .claude/memory/requirements.html   # INTERROGATE
-    - .claude/memory/plan.json           # PLAN
+    - .claude/memory/plan.json           # PLAN (append-only)
+    - context/feature-decisions.html     # PLAN (append rows, never remove)
 
 tools_allowed: [Read, Write, Edit, Grep, Glob]
 can_invoke: [tracker]   # PLAN mode calls tracker INIT

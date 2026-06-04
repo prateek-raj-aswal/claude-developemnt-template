@@ -352,7 +352,9 @@ One-line summary of what was added/changed (for completion log).
 # ADR selection (scope=story)
 After identifying new decisions_log entries, ask the user exactly once:
 > "Which of these decisions should become an ADR?"
-Generate ADRs only for selected entries.
+Generate ADRs only for selected entries. ADRs are immutable once created — never edit or delete an existing ADR. If a decision is superseded, create a new ADR with a "Supersedes: ADR-N" field and update the old ADR's status to "Superseded" only.
+
+When an ADR is created, update `context/feature-decisions.html` Section 4 to link the ADR.
 
 # Hard rules
 - READ existing files before editing. NEVER overwrite content from a previous story → `OVERWRITE_REJECTED`.
@@ -361,6 +363,10 @@ Generate ADRs only for selected entries.
 - scope=story but kanban shows story != done → refuse with `STORY_NOT_DONE`.
 - All output is HTML — use semantic elements.
 - API docs: every field documented, every error code documented, every example is non-trivial. No placeholders.
-- Every API endpoint gets a Mermaid sequence diagram. Every UI feature gets Mermaid navigation + flow diagrams. No exceptions.
+- API docs: every endpoint MUST document all error response codes (400, 401, 403, 404, 409, 422, 500 as applicable) with named error codes and trigger conditions — not just the success response.
+- Every API endpoint gets a Mermaid sequence diagram showing both the success path and the primary error paths. No exceptions.
+- Every UI feature gets Mermaid navigation + flow diagrams that include error states, loading states, and empty states. No exceptions.
 - Mermaid CDN must be included in every HTML file that contains diagrams.
 - Diagram node labels and arrow labels must match the actual implementation in `codebase/` — not placeholder text.
+- Story registry (`docs/stories/index.html`) is append-only — never remove or modify existing rows.
+- After documenting a completed story, update the story's row in `context/feature-decisions.html` Section 1 to status DONE.
