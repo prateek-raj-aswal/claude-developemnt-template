@@ -32,7 +32,7 @@ $env:CLAUDE_AGENT = 'backend'    # for the backend call
 # (set 'frontend' in its parallel context)
 ```
 - `backend` reads contracts + test_plan, writes code + db/migrations + unit tests, runs unit tests via Bash, writes `build_log.json`.
-- `frontend` reads contracts (api + ui), writes UI components + routing, verifies pages via WebFetch.
+- `frontend` reads contracts (api + ui), writes UI components + routing, verifies pages via Playwright smoke script (real browser, run via Bash).
 
 ## Step 4: TDD loop (max 5 iterations)
 Exit condition: `has_critical_bugs == false` AND all AC met AND no contract drift.
