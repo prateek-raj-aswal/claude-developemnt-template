@@ -6,6 +6,9 @@
 # Per-developer local permissions (never commit)
 .claude/settings.local.json
 
+# Hook runtime logs (generated per session)
+.claude/logs/
+
 # Runtime memory — generated per project, not part of the template
 .claude/memory/events.jsonl
 .claude/memory/kanban.json
