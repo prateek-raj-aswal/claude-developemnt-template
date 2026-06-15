@@ -141,26 +141,46 @@ jobs:
           script: |
             set -e
 
-            # Authenticate Docker with ECR using the instance's IAM role credentials.
-            aws ecr get-login-password --region "$AWS_REGION" \
-              | docker login --username AWS --password-stdin "$ECR_REGISTRY"
-
             cd "${{ vars.EC2_DEPLOY_PATH }}"
 
-            # Write runtime secrets from GitHub secrets to .env on the EC2 host.
+            # ── Pre-deploy database backup ─────────────────────────────────────
+            # Always snapshot the database before the new backend starts so that
+            # any failed migration can be rolled back by restoring this dump.
+            BACKUP_DIR="$PWD/backups"
+            mkdir -p "$BACKUP_DIR"
+            PG_CONTAINER=$(docker ps --format '{{.Names}}' | grep postgres | head -1 || true)
+            if [ -n "$PG_CONTAINER" ]; then
+              BACKUP_FILE="$BACKUP_DIR/pre-deploy-$(date +%Y%m%d-%H%M%S).sql.gz"
+              PG_USER=$(grep '^POSTGRES_USER=' .env | cut -d= -f2 || echo 'kanban')
+              PG_DB=$(grep '^POSTGRES_DB='   .env | cut -d= -f2 || echo 'kanban')
+              docker exec "$PG_CONTAINER" pg_dump -U "$PG_USER" "$PG_DB" \
+                | gzip > "$BACKUP_FILE"
+              echo "Backup saved: $BACKUP_FILE ($(du -sh "$BACKUP_FILE" | cut -f1))"
+              # Retain the 7 most recent backups; delete older ones.
+              ls -t "$BACKUP_DIR"/*.sql.gz 2>/dev/null | tail -n +8 | xargs rm -f || true
+            else
+              echo "No running postgres container found — skipping backup (fresh deploy)."
+            fi
+
+            # ── Patch secrets into .env ────────────────────────────────────────
             # This file must already exist with the non-secret values filled in;
             # we only patch the two secret keys here so they are never baked into
             # the image or the workflow log.
             sed -i "s|^POSTGRES_PASSWORD=.*|POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}|" .env
             sed -i "s|^JWT_SECRET=.*|JWT_SECRET=${{ secrets.JWT_SECRET }}|" .env
 
-            # Set the image tag for this deploy and pull the new images.
+            # ── Authenticate Docker with ECR ───────────────────────────────────
+            aws ecr get-login-password --region "$AWS_REGION" \
+              | docker login --username AWS --password-stdin "$ECR_REGISTRY"
+
+            # ── Pull new images and restart services ───────────────────────────
             export VERSION="${{ needs.build-and-push.outputs.image-tag }}"
             export REGISTRY="$ECR_REGISTRY"
 
             docker compose -f docker-compose.yml -f docker-compose.prod.yml pull
             docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
 
+            # ── Reclaim disk space ─────────────────────────────────────────────
             # Remove all unused images (not just dangling) to reclaim disk space.
             # Safe here because the new containers are already up, so their images
             # are referenced and won't be removed.
