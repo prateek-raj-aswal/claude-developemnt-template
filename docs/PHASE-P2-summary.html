@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>PHASE-P2 Summary — Premium Glass Polish</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 900px; margin: 2rem auto; padding: 0 1rem; line-height: 1.6; }
+    h1 { border-bottom: 2px solid #333; padding-bottom: .5rem; }
+    h2 { color: #333; margin-top: 2rem; border-bottom: 1px solid #eee; padding-bottom: .3rem; }
+    h3 { color: #555; margin-top: 1.25rem; }
+    code { background: #f0f0f0; padding: .1rem .3rem; border-radius: 3px; font-size: .9em; }
+    table { border-collapse: collapse; width: 100%; margin: .75rem 0; font-size: .9em; }
+    th, td { border: 1px solid #ccc; padding: .4rem .65rem; text-align: left; vertical-align: top; }
+    th { background: #f5f5f5; }
+    .badge { display: inline-block; padding: .15rem .4rem; border-radius: 3px; font-size: .8em; font-weight: bold; margin-left: .3rem; }
+    .badge-pass { background: #e8f5e9; color: #2e7d32; }
+    .badge-clear { background: #e3f2fd; color: #1565c0; }
+    .badge-done  { background: #ede7f6; color: #4527a0; }
+    .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: .75rem; margin: 1.25rem 0; }
+    .stat { background: #f5f5f5; border-radius: 6px; padding: .75rem 1rem; text-align: center; }
+    .stat-num { font-size: 2rem; font-weight: bold; color: #333; display: block; }
+    .stat-label { font-size: .82em; color: #666; }
+    ul { padding-left: 1.4rem; }
+    li { margin: .3rem 0; }
+    a { color: #2673c8; }
+    .sec-tag { display: inline-block; background: #fff3e0; border: 1px solid #ffe0b2; color: #e65100; padding: .1rem .4rem; border-radius: 3px; font-size: .82em; font-weight: bold; }
+  </style>
+</head>
+<body>
+
+<h1>PHASE-P2 — Premium Glass Polish</h1>
+<p>
+  <strong>Dates:</strong> 2026-06-12 – 2026-06-15 &nbsp;|&nbsp;
+  <strong>Phase:</strong> P2 &nbsp;|&nbsp;
+  <strong>Total stories:</strong> 22 &nbsp;|&nbsp;
+  <strong>Security verdict:</strong> <span class="badge badge-clear">CLEAR</span>
+</p>
+<p>
+  PHASE-P2 was a focused polish pass that shipped 14 new premium glass themes, a density system, an ambient
+  background layer, glassmorphism surface tokens, a SettingsModal, a boot splash, an SVG favicon, board
+  emoji support, card start-date, a column colour picker (24 swatches), a Gantt-style Timeline view, and
+  a mobile settings tab — all without adding new backend infrastructure beyond two Flyway migrations.
+</p>
+
+<!-- ── Stats ──────────────────────────────────────────────────────── -->
+<div class="stat-grid">
+  <div class="stat">
+    <span class="stat-num">22</span>
+    <span class="stat-label">Stories completed</span>
+  </div>
+  <div class="stat">
+    <span class="stat-num">79</span>
+    <span class="stat-label">Tests passing</span>
+  </div>
+  <div class="stat">
+    <span class="stat-num">2</span>
+    <span class="stat-label">Flyway migrations (V33, V34)</span>
+  </div>
+  <div class="stat">
+    <span class="stat-num">14</span>
+    <span class="stat-label">New glass themes</span>
+  </div>
+  <div class="stat">
+    <span class="stat-num">0</span>
+    <span class="stat-label">Critical security findings</span>
+  </div>
+</div>
+
+<!-- ── Key features ──────────────────────────────────────────────── -->
+<h2>Key Features Delivered</h2>
+
+<h3>Backend</h3>
+<table>
+  <thead><tr><th>Story</th><th>Feature</th><th>API change</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><code>US-1800</code></td>
+      <td>Flyway V33 — add <code>start_date</code> column to cards (IF NOT EXISTS, idempotent)</td>
+      <td>DB schema only</td>
+    </tr>
+    <tr>
+      <td><code>US-1801</code></td>
+      <td>Card <code>startDate</code> field in model, request, and response; PATCH validation</td>
+      <td>
+        <a href="api/boards.html#PATCH-cards-id">PATCH /api/v1/cards/{cardId}</a> —
+        new <code>startDate</code> field; 422 <code>INVALID_START_DATE</code>,
+        422 <code>START_DATE_AFTER_DUE_DATE</code>
+      </td>
+    </tr>
+    <tr>
+      <td><code>US-1803</code></td>
+      <td>Flyway V34 — add <code>emoji</code> column to boards (<code>VARCHAR(10) NOT NULL DEFAULT '◇'</code>)</td>
+      <td>DB schema only</td>
+    </tr>
+    <tr>
+      <td><code>US-1804</code></td>
+      <td>Board <code>emoji</code> field; new <code>PUT /api/v1/boards/{id}</code> endpoint</td>
+      <td>
+        <a href="api/boards.html#POST-boards">POST /api/v1/boards</a> extended with <code>emoji</code>;
+        <a href="api/boards.html#PUT-boards-id">PUT /api/v1/boards/{id}</a> NEW — updates name, emoji, description;
+        422 <code>INVALID_EMOJI</code> if emoji exceeds 10 chars
+      </td>
+    </tr>
+    <tr>
+      <td><code>US-1805</code></td>
+      <td>Verified board <code>description</code> field present end-to-end — no gaps</td>
+      <td>No change</td>
+    </tr>
+    <tr>
+      <td><code>US-1806</code></td>
+      <td>Verified column <code>headerColor</code> present end-to-end — no gaps</td>
+      <td>No change</td>
+    </tr>
+    <tr>
+      <td><code>US-1807</code></td>
+      <td>Verified card <code>color</code> field present end-to-end — no gaps</td>
+      <td>No change</td>
+    </tr>
+    <tr>
+      <td><code>US-1808</code></td>
+      <td>Verified Issue entity CRUD is complete — no gaps</td>
+      <td>No change</td>
+    </tr>
+    <tr>
+      <td><code>US-1809</code></td>
+      <td>Verified starred-boards toggle and list endpoints present — no gaps</td>
+      <td>No change</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Frontend — Theme &amp; Layout System</h3>
+<table>
+  <thead><tr><th>Story</th><th>Feature</th><th>Key files</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><code>US-1810</code></td>
+      <td>14 new premium glass themes; <code>ThemeName</code> union type</td>
+      <td><code>lib/theme.ts</code>, <code>store/themeStore.ts</code></td>
+    </tr>
+    <tr>
+      <td><code>US-1811</code></td>
+      <td><code>AmbientBg</code> component — full-screen gradient/texture layer behind app content</td>
+      <td><code>components/AmbientBg.tsx</code></td>
+    </tr>
+    <tr>
+      <td><code>US-1812</code></td>
+      <td>Glassmorphism surface tokens (<code>--glass-bg</code>, <code>--glass-border</code>, <code>--glass-blur</code>)</td>
+      <td><code>app/globals.css</code></td>
+    </tr>
+    <tr>
+      <td><code>US-1813</code></td>
+      <td>Density system: <code>DensityName</code> (<code>compact | comfortable | spacious</code>); <code>DENSITY</code> constants; persisted to localStorage</td>
+      <td><code>lib/density.ts</code>, <code>store/themeStore.ts</code></td>
+    </tr>
+    <tr>
+      <td><code>US-1814</code> <span class="badge badge-pass">15/15</span></td>
+      <td>SettingsModal with Appearance tab: 20-swatch theme picker + density radio group</td>
+      <td><code>components/SettingsModal.tsx</code></td>
+    </tr>
+    <tr>
+      <td><code>US-1815</code></td>
+      <td>Boot splash overlay — full-screen fade-out on <code>authStore</code> hydration</td>
+      <td><code>components/BootSplash.tsx</code></td>
+    </tr>
+    <tr>
+      <td><code>US-1816</code></td>
+      <td>SVG favicon — inline SVG, correct at 16px and 32px</td>
+      <td><code>public/favicon.svg</code></td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Frontend — Board &amp; Card Enhancements</h3>
+<table>
+  <thead><tr><th>Story</th><th>Feature</th><th>Key files</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><code>US-1802</code> <span class="badge badge-pass">6/6</span></td>
+      <td>Frontend types updated: <code>CardResponse.startDate</code> and <code>CardResponse.color</code>; CardModal date control for startDate</td>
+      <td><code>types/api.ts</code>, <code>components/board/CardModal.tsx</code></td>
+    </tr>
+    <tr>
+      <td><code>US-1817</code> <span class="badge badge-pass">10/10</span></td>
+      <td>CreateBoardModal enrichment: emoji picker input + description textarea; POST includes <code>emoji</code> and <code>description</code></td>
+      <td><code>components/board/CreateBoardModal.tsx</code></td>
+    </tr>
+    <tr>
+      <td><code>US-1818</code></td>
+      <td>CardItem 4px left colour accent bar derived from <code>card.color</code></td>
+      <td><code>components/board/CardItem.tsx</code></td>
+    </tr>
+    <tr>
+      <td><code>US-1819</code> <span class="badge badge-pass">14/14</span></td>
+      <td>Column 24-swatch colour picker; PATCH <code>headerColor</code> on selection; clear option</td>
+      <td><code>components/board/Column.tsx</code></td>
+    </tr>
+    <tr>
+      <td><code>US-1820</code> <span class="badge badge-pass">14/14</span></td>
+      <td>TimelineView Gantt rewrite: CSS grid 200px + 28px/day; swimlanes by column; drag-resize edges; today-line; weekend shading</td>
+      <td><code>components/board/TimelineView.tsx</code></td>
+    </tr>
+    <tr>
+      <td><code>US-1821</code> <span class="badge badge-pass">10/10</span></td>
+      <td>Mobile bottom nav Settings tab — taps open SettingsModal; no overflow at 375px</td>
+      <td><code>components/layout/BottomNav.tsx</code></td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- ── Security ──────────────────────────────────────────────────── -->
+<h2>Security Review</h2>
+<p>
+  A security audit was run at the end of PHASE-P2.
+  Verdict: <span class="badge badge-clear">CLEAR</span> — 0 critical findings, 0 high findings.
+</p>
+<table>
+  <thead><tr><th>Severity</th><th>Finding</th><th>Resolution</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><span class="sec-tag">MEDIUM</span></td>
+      <td>Board <code>description</code> field lacked a <code>@Size</code> server-side constraint — oversized payloads would reach the DB layer</td>
+      <td>Fixed in US-1804: <code>@Size(max = 2000)</code> added to <code>CreateBoardRequest</code> and <code>UpdateBoardRequest</code></td>
+    </tr>
+    <tr>
+      <td><span class="sec-tag">MEDIUM</span></td>
+      <td>Timeline endpoint URL was not consistently guarded by <code>BoardAccessPolicy</code> in one path variant</td>
+      <td>Fixed prior to US-1820 ship: access policy applied uniformly to all timeline routes</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- ── API docs ──────────────────────────────────────────────────── -->
+<h2>API Documentation Updated</h2>
+<ul>
+  <li><a href="api/boards.html">api/boards.html</a> — <code>POST /api/v1/boards</code> (emoji, description 2000-char limit); new <code>PUT /api/v1/boards/{id}</code>; BoardResponse <code>emoji</code> and <code>starred</code> fields</li>
+  <li><a href="api/boards.html#PATCH-cards-id">api/boards.html#PATCH-cards-id</a> — <code>startDate</code> field; 422 <code>INVALID_START_DATE</code>, <code>START_DATE_AFTER_DUE_DATE</code></li>
+  <li><a href="api/timeline.html">api/timeline.html</a> — NEW: <code>GET /api/v1/boards/{boardId}/cards/timeline</code> and <code>PATCH /api/v1/cards/{cardId}/dates</code></li>
+</ul>
+
+<!-- ── Deferred / not in scope ───────────────────────────────────── -->
+<h2>Deferred — Not in PHASE-P2 Scope</h2>
+<ul>
+  <li>Print / export of Timeline as PDF — deferred to Beta</li>
+  <li>Timeline zoom levels (week / quarter) — deferred to Beta</li>
+  <li>Board emoji picker (rich emoji browser) — CreateBoardModal uses plain text input; full picker deferred</li>
+  <li>Per-user theme sync across devices (server-side persistence) — deferred; current storage is localStorage only</li>
+</ul>
+
+<hr>
+<p style="color: #888; font-size: .85em;">
+  Generated: 2026-06-15 &nbsp;|&nbsp;
+  <a href="README.html">Back to docs index</a> &nbsp;|&nbsp;
+  <a href="stories/index.html">Story registry</a>
+</p>
+
+</body>
+</html>
