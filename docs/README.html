@@ -25,9 +25,9 @@
 <h1>Kanban v1.0 — Documentation Index</h1>
 <p>
   <strong>Project:</strong> Collaborative Kanban project management platform &nbsp;|&nbsp;
-  <strong>Version:</strong> 1.0 MVP &nbsp;|&nbsp;
-  <strong>Ship date:</strong> 2026-06-11 &nbsp;|&nbsp;
-  <strong>Status:</strong> 62/62 stories done
+  <strong>Version:</strong> 1.0 MVP + PHASE-P2 Glass Polish &nbsp;|&nbsp;
+  <strong>Last ship:</strong> 2026-06-15 &nbsp;|&nbsp;
+  <strong>Status:</strong> 85/85 stories done
 </p>
 <div class="note">
   This is the root documentation index. All paths are relative to <code>docs/</code>.
@@ -77,6 +77,11 @@ cd codebase/frontend && npx vitest run
       <td>Modules / Tags</td>
       <td>CRUD /boards/{id}/modules; assign/unassign /cards/{id}/modules/{moduleId}</td>
       <td><a href="api/modules.html">api/modules.html</a></td>
+    </tr>
+    <tr>
+      <td>Timeline <span class="badge badge-new">PHASE-P2</span></td>
+      <td>GET /boards/{id}/cards/timeline (Gantt data); PATCH /cards/{id}/dates (drag-resize)</td>
+      <td><a href="api/timeline.html">api/timeline.html</a></td>
     </tr>
   </tbody>
 </table>
@@ -136,10 +141,19 @@ cd codebase/frontend && npx vitest run
   </tbody>
 </table>
 
+<!-- ─── PHASE-P2 SUMMARY ─────────────────────────────────────────────── -->
+<h2>PHASE-P2 Summary <span class="badge badge-new">NEW</span></h2>
+<p>
+  Premium glass polish pass — 22 stories, 14 new themes, Gantt Timeline, density system, board emoji,
+  card startDate, column colour picker, SettingsModal, boot splash, SVG favicon.
+  Security verdict: CLEAR (2 medium findings fixed).
+</p>
+<p><a href="PHASE-P2-summary.html">PHASE-P2-summary.html</a></p>
+
 <!-- ─── STORY REGISTRY ───────────────────────────────────────────────── -->
 <h2>Story Registry (<code>docs/stories/</code>)</h2>
 <p>
-  All 62 user stories with status, phase, and API links.
+  All 85 user stories with status, phase, and API links.
   Append-only — persistent across the full project lifecycle.
 </p>
 <p><a href="stories/index.html">stories/index.html</a></p>
@@ -163,7 +177,7 @@ cd codebase/frontend && npx vitest run
   <tbody>
     <tr><td>Backend</td><td>Java 21 + Spring Boot 3.3.x + Gradle</td><td>REST + WebSocket/STOMP; JWT auth; <code>/api/v1/</code> versioning</td></tr>
     <tr><td>Frontend</td><td>Next.js 14 (App Router) + TypeScript + Zustand</td><td>Client-rendered; vanilla CSS + custom theme system; no paid UI libs</td></tr>
-    <tr><td>Database</td><td>PostgreSQL 16 + Flyway 10.x</td><td>UUID PKs; Flyway at V32; next migration must be V33</td></tr>
+    <tr><td>Database</td><td>PostgreSQL 16 + Flyway 10.x</td><td>UUID PKs; Flyway at V34 (V33 = cards.start_date, V34 = boards.emoji); next migration must be V35</td></tr>
     <tr><td>Auth</td><td>Short-lived JWT (15 min) + rotating refresh tokens (7 days)</td><td>refresh_tokens table in PostgreSQL; see ADR-001</td></tr>
     <tr><td>Authorization</td><td>RBAC: OWNER / ADMIN / MEMBER / VIEWER</td><td>Central policy classes; see ADR-002</td></tr>
     <tr><td>Readable IDs</td><td>PREFIX-NNN: US-NNN, FEAT-NNN, BUG-NNN</td><td>Workspace-scoped; SELECT FOR UPDATE counter; see ADR-003</td></tr>
