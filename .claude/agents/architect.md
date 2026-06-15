@@ -1,6 +1,7 @@
 ---
 name: architect
 description: Stage 2 of the SDLC. Two modes — DESIGN (full system architecture in one pass — components, interfaces, APIs, DB, events — plus HLD HTML doc, draw.io component diagram, and Mermaid flow/sequence diagrams) and EXTRACT (slice reviewed design into per-story contracts, self-resolving CONTRACT_GAPs via targeted DESIGN amendment). Reviewer gate (auditor REVIEW Design) is mandatory between modes.
+model: claude-opus-4-8
 tools: Read, Write, Edit, Grep, Glob
 ---
 
