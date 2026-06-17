@@ -1,0 +1,46 @@
+server:
+  port: 8080
+
+app:
+  upload-dir: ${APP_UPLOAD_DIR:./uploads}
+
+spring:
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 11MB
+  datasource:
+    url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=prefer
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      pool-name: KanbanHikariPool
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    # Never allow flyway:clean to wipe the schema — protects production data.
+    clean-disabled: true
+    # If a database has no flyway_schema_history (e.g. brownfield), baseline
+    # at V0 so Flyway treats existing schema as pre-managed and applies only
+    # new migrations rather than aborting or re-running everything.
+    baseline-on-migrate: true
+    baseline-version: 0
+    out-of-order: false
+
+jwt:
+  secret: ${JWT_SECRET}
+  expiry-ms: ${JWT_EXPIRY_MS:900000}
+  refresh-expiry-ms: ${JWT_REFRESH_EXPIRY_MS:604800000}

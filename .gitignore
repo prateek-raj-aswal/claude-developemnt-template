@@ -38,9 +38,18 @@ docs/runbooks/
 # Regression suite registry (populated at runtime)
 tests/regression/suite.json
 
-# Generated code (produced by backend/frontend/devops at runtime)
-codebase/*
-!codebase/.gitkeep
+
+# Codebase build artifacts and dependencies — never commit
+codebase/frontend/node_modules/
+codebase/frontend/.next/
+codebase/frontend/e2e-report/
+codebase/frontend/debug-issues.png
+codebase/backend/node_modules/
+codebase/backend/dist/
+codebase/backend/target/
+codebase/backend/build/
+codebase/backend/.gradle/
+codebase/backend/bin/
 
 # Private keys and certificates — never commit
 *.pem

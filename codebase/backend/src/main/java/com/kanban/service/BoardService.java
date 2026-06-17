@@ -1,0 +1,294 @@
+package com.kanban.service;
+
+import com.kanban.dto.request.CreateBoardRequest;
+import com.kanban.dto.request.UpdateBoardRequest;
+import com.kanban.dto.response.BoardResponse;
+import com.kanban.dto.response.CardResponse;
+import com.kanban.dto.response.ColumnResponse;
+import com.kanban.dto.response.LabelResponse;
+import com.kanban.dto.response.MemberResponse;
+import com.kanban.dto.response.ModuleResponse;
+import com.kanban.exception.ApiException;
+import com.kanban.model.Board;
+import com.kanban.model.Card;
+import com.kanban.model.BoardMember;
+import com.kanban.model.User;
+import com.kanban.repository.BoardMemberRepository;
+import com.kanban.repository.BoardRepository;
+import com.kanban.repository.BoardStarRepository;
+import com.kanban.repository.CardAssigneeRepository;
+import com.kanban.repository.CardModuleRepository;
+import com.kanban.repository.CardRepository;
+import com.kanban.repository.CommentRepository;
+import com.kanban.repository.SubtaskRepository;
+import com.kanban.repository.UserRepository;
+import com.kanban.repository.WorkspaceMemberRepository;
+import com.kanban.security.BoardAccessPolicy;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.Instant;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.mapping;
+import static java.util.stream.Collectors.toList;
+
+@Service
+public class BoardService {
+
+    private final BoardRepository boardRepository;
+    private final BoardMemberRepository memberRepository;
+    private final UserRepository userRepository;
+    private final BoardAccessPolicy accessPolicy;
+    private final SubtaskRepository subtaskRepository;
+    private final CommentRepository commentRepository;
+    private final CardAssigneeRepository cardAssigneeRepository;
+    private final CardModuleRepository cardModuleRepository;
+    private final CardRepository cardRepository;
+    private final WorkspaceMemberRepository workspaceMemberRepository;
+    private final BoardStarRepository boardStarRepository;
+
+    public BoardService(BoardRepository boardRepository,
+                        BoardMemberRepository memberRepository,
+                        UserRepository userRepository,
+                        BoardAccessPolicy accessPolicy,
+                        SubtaskRepository subtaskRepository,
+                        CommentRepository commentRepository,
+                        CardAssigneeRepository cardAssigneeRepository,
+                        CardModuleRepository cardModuleRepository,
+                        CardRepository cardRepository,
+                        WorkspaceMemberRepository workspaceMemberRepository,
+                        BoardStarRepository boardStarRepository) {
+        this.boardRepository = boardRepository;
+        this.memberRepository = memberRepository;
+        this.userRepository = userRepository;
+        this.accessPolicy = accessPolicy;
+        this.subtaskRepository = subtaskRepository;
+        this.commentRepository = commentRepository;
+        this.cardAssigneeRepository = cardAssigneeRepository;
+        this.cardModuleRepository = cardModuleRepository;
+        this.cardRepository = cardRepository;
+        this.workspaceMemberRepository = workspaceMemberRepository;
+        this.boardStarRepository = boardStarRepository;
+    }
+
+    @Transactional
+    public BoardResponse createBoard(CreateBoardRequest request, UUID requestingUserId) {
+        if (request.workspaceId() != null &&
+                !workspaceMemberRepository.existsByWorkspaceIdAndUserId(request.workspaceId(), requestingUserId)) {
+            throw new ApiException(HttpStatus.FORBIDDEN, "FORBIDDEN", "Not a member of the specified workspace");
+        }
+        String emoji = (request.emoji() == null || request.emoji().isBlank()) ? "◇" : request.emoji();
+        if (emoji.length() > 10) {
+            throw new ApiException(HttpStatus.UNPROCESSABLE_ENTITY, "INVALID_EMOJI",
+                    "emoji must not exceed 10 characters");
+        }
+        Board board = new Board();
+        board.setName(request.name());
+        board.setOwnerId(requestingUserId);
+        board.setWorkspaceId(request.workspaceId());
+        board.setDescription(request.description());
+        board.setEmoji(emoji);
+        board = boardRepository.save(board);
+
+        BoardMember member = new BoardMember();
+        member.setBoardId(board.getId());
+        member.setUserId(requestingUserId);
+        member.setRole(com.kanban.security.Role.OWNER);
+        memberRepository.save(member);
+
+        return toBoardResponse(board, com.kanban.security.Role.OWNER.name(), 0, false, false);
+    }
+
+    @Transactional(readOnly = true)
+    public List<BoardResponse> getBoardsForUser(UUID userId) {
+        return getBoardsForUser(userId, false);
+    }
+
+    @Transactional(readOnly = true)
+    public List<BoardResponse> getBoardsForUser(UUID userId, boolean starredOnly) {
+        List<Board> boards = boardRepository.findAllActiveByMember(userId);
+        List<UUID> boardIds = boards.stream().map(Board::getId).toList();
+        Map<UUID, Integer> taskCounts = boardIds.isEmpty() ? Map.of()
+                : cardRepository.countActiveCardsByBoardIds(boardIds).stream()
+                    .collect(Collectors.toMap(row -> (UUID) row[0], row -> ((Long) row[1]).intValue()));
+        java.util.Set<UUID> starredIds = boardIds.isEmpty() ? java.util.Set.of()
+                : boardStarRepository.findByUserIdOrderByStarredAtDesc(userId).stream()
+                    .map(star -> star.getBoardId())
+                    .collect(java.util.stream.Collectors.toSet());
+        return boards.stream()
+                .filter(b -> !starredOnly || starredIds.contains(b.getId()))
+                .map(b -> {
+                    String role = memberRepository.findByBoardIdAndUserId(b.getId(), userId)
+                            .map(BoardMember::getRoleString).orElse(com.kanban.security.Role.MEMBER.name());
+                    return toBoardResponse(b, role, taskCounts.getOrDefault(b.getId(), 0), false,
+                            starredIds.contains(b.getId()));
+                })
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public BoardResponse getBoardById(UUID boardId, UUID requestingUserId) {
+        Board board = boardRepository.findActiveById(boardId)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "BOARD_NOT_FOUND", "Board not found"));
+        accessPolicy.assertMember(boardId, requestingUserId);
+        String role = memberRepository.findByBoardIdAndUserId(boardId, requestingUserId)
+                .map(BoardMember::getRoleString).orElse(com.kanban.security.Role.MEMBER.name());
+        boolean starred = boardStarRepository.existsByUserIdAndBoardId(requestingUserId, boardId);
+        return toBoardResponse(board, role, 0, true, starred);
+    }
+
+    @Transactional
+    public BoardResponse updateBoard(UUID boardId, UpdateBoardRequest request, UUID requestingUserId) {
+        Board board = boardRepository.findActiveById(boardId)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "BOARD_NOT_FOUND", "Board not found"));
+        accessPolicy.assertRole(boardId, requestingUserId, com.kanban.security.Role.ADMIN);
+        if (request.groupBy() != null) {
+            String gb = request.groupBy().toUpperCase();
+            if (!gb.equals("NONE") && !gb.equals("ASSIGNEE") && !gb.equals("PRIORITY") && !gb.equals("MODULE")) {
+                throw new ApiException(HttpStatus.UNPROCESSABLE_ENTITY, "INVALID_GROUP_BY",
+                        "groupBy must be one of NONE, ASSIGNEE, PRIORITY, MODULE");
+            }
+            board.setGroupBy(gb);
+        }
+        if (request.emoji() != null) {
+            if (request.emoji().length() > 10) {
+                throw new ApiException(HttpStatus.UNPROCESSABLE_ENTITY, "INVALID_EMOJI",
+                        "emoji must not exceed 10 characters");
+            }
+            board.setEmoji(request.emoji());
+        }
+        board.setName(request.name());
+        board.setDescription(request.description());
+        board = boardRepository.save(board);
+        String role = memberRepository.findByBoardIdAndUserId(boardId, requestingUserId)
+                .map(BoardMember::getRoleString).orElse(com.kanban.security.Role.MEMBER.name());
+        boolean starred = boardStarRepository.existsByUserIdAndBoardId(requestingUserId, boardId);
+        return toBoardResponse(board, role, 0, false, starred);
+    }
+
+    @Transactional
+    public void deleteBoard(UUID boardId, UUID requestingUserId) {
+        Board board = boardRepository.findActiveById(boardId)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "BOARD_NOT_FOUND", "Board not found"));
+        if (!board.getOwnerId().equals(requestingUserId)) {
+            throw new ApiException(HttpStatus.FORBIDDEN, "FORBIDDEN", "Only the owner can delete this board");
+        }
+        board.setDeletedAt(Instant.now());
+        boardRepository.save(board);
+    }
+
+    @Transactional(readOnly = true)
+    public List<MemberResponse> getMembers(UUID boardId, UUID requestingUserId) {
+        boardRepository.findActiveById(boardId)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "BOARD_NOT_FOUND", "Board not found"));
+        accessPolicy.assertMember(boardId, requestingUserId);
+
+        List<BoardMember> members = memberRepository.findAllByBoardId(boardId);
+        List<UUID> userIds = members.stream().map(BoardMember::getUserId).toList();
+        Map<UUID, User> userMap = userRepository.findAllById(userIds).stream()
+                .collect(Collectors.toMap(User::getId, Function.identity()));
+
+        return members.stream()
+                .map(m -> {
+                    User u = userMap.get(m.getUserId());
+                    return new MemberResponse(m.getUserId(),
+                            u != null ? u.getDisplayName() : "",
+                            u != null ? u.getEmail() : "",
+                            m.getRoleString(), m.getJoinedAt());
+                })
+                .toList();
+    }
+
+    @Transactional
+    public void updateBoardMemberRole(UUID boardId, UUID actorId, UUID targetUserId,
+                                      com.kanban.security.Role newRole) {
+        accessPolicy.assertRole(boardId, actorId, com.kanban.security.Role.ADMIN);
+        if (newRole == com.kanban.security.Role.OWNER) {
+            accessPolicy.assertRole(boardId, actorId, com.kanban.security.Role.OWNER);
+        }
+        BoardMember target = memberRepository.findByBoardIdAndUserId(boardId, targetUserId)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND,
+                        "MEMBER_NOT_FOUND", "Member not found in board"));
+        target.setRole(newRole);
+        memberRepository.save(target);
+    }
+
+    public BoardResponse toBoardResponse(Board board, String role, boolean includeColumns) {
+        return toBoardResponse(board, role, 0, includeColumns, false);
+    }
+
+    public BoardResponse toBoardResponse(Board board, String role, int taskCount, boolean includeColumns) {
+        return toBoardResponse(board, role, taskCount, includeColumns, false);
+    }
+
+    public BoardResponse toBoardResponse(Board board, String role, int taskCount, boolean includeColumns, boolean starred) {
+        List<ColumnResponse> columns = null;
+        if (includeColumns) {
+            List<UUID> cardIds = board.getColumns().stream()
+                    .filter(c -> c.getDeletedAt() == null)
+                    .flatMap(c -> c.getCards().stream().filter(card -> card.getDeletedAt() == null))
+                    .map(Card::getId)
+                    .collect(Collectors.toList());
+
+            Map<UUID, int[]> subtaskCounts = cardIds.isEmpty() ? Map.of()
+                    : subtaskRepository.getCountsByCardIds(cardIds);
+            Map<UUID, Integer> commentCounts = cardIds.isEmpty() ? Map.of()
+                    : commentRepository.getCountsByCardIds(cardIds);
+            Map<UUID, List<UUID>> assigneeMap = cardIds.isEmpty() ? Map.of()
+                    : cardAssigneeRepository.findByCardIdIn(cardIds).stream()
+                        .collect(groupingBy(
+                                com.kanban.model.CardAssignee::getCardId,
+                                mapping(com.kanban.model.CardAssignee::getUserId, toList())));
+            Map<UUID, List<ModuleResponse>> moduleMap = cardIds.isEmpty() ? Map.of()
+                    : cardModuleRepository.findByCardIn(cardIds).stream()
+                        .collect(groupingBy(
+                                com.kanban.model.CardModule::getCard,
+                                mapping((com.kanban.model.CardModule cm) -> new ModuleResponse(
+                                        cm.getModuleEntity().getId(),
+                                        cm.getModuleEntity().getBoard().getId(),
+                                        cm.getModuleEntity().getName()), toList())));
+
+            columns = board.getColumns().stream()
+                    .filter(c -> c.getDeletedAt() == null)
+                    .map(c -> {
+                        List<CardResponse> cards = c.getCards().stream()
+                                .filter(card -> card.getDeletedAt() == null)
+                                .map(card -> {
+                                    int[] sc = subtaskCounts.getOrDefault(card.getId(), new int[]{0, 0});
+                                    int cc = commentCounts.getOrDefault(card.getId(), 0);
+                                    List<UUID> assignees = assigneeMap.getOrDefault(card.getId(), List.of());
+                                    List<ModuleResponse> modules = moduleMap.getOrDefault(card.getId(), List.of());
+                                    return new CardResponse(
+                                            card.getId(), card.getColumn().getId(),
+                                            card.getTitle(), card.getDescription(),
+                                            card.getPosition(), card.getStartDate(), card.getDueDate(),
+                                            card.getPriority(),
+                                            card.getLabels().stream()
+                                                    .map(l -> new LabelResponse(l.getId(), l.getName(), l.getColor()))
+                                                    .toList(),
+                                            assignees,
+                                            sc[0], sc[1], cc,
+                                            card.getCreatedAt(), card.getUpdatedAt(),
+                                            card.getColor(), modules,
+                                            card.getType(), card.getReadableId()
+                                    );
+                                })
+                                .toList();
+                        return new ColumnResponse(c.getId(), c.getBoard().getId(), c.getName(),
+                                c.getPosition(), c.getCreatedAt(), cards, c.getHeaderColor(), c.getColor());
+                    })
+                    .toList();
+        }
+        String groupBy = board.getGroupBy() != null ? board.getGroupBy() : "NONE";
+        String emoji = board.getEmoji() != null ? board.getEmoji() : "◇";
+        return new BoardResponse(board.getId(), board.getName(), board.getOwnerId(),
+                role, board.getCreatedAt(), board.getWorkspaceId(), taskCount, columns,
+                board.getDescription(), groupBy, starred, emoji);
+    }
+}

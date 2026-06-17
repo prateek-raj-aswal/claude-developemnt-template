@@ -1,0 +1,51 @@
+plugins {
+    id 'org.springframework.boot' version '3.3.0'
+    id 'io.spring.dependency-management' version '1.1.4'
+    id 'java'
+}
+
+group = 'com.kanban'
+version = '1.1.0'
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_21
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.flywaydb:flyway-core'
+    implementation 'org.flywaydb:flyway-database-postgresql'
+    runtimeOnly 'org.postgresql:postgresql'
+
+    // JWT
+    implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
+
+    implementation 'net.logstash.logback:logstash-logback-encoder:7.4'
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.security:spring-security-test'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+    jvmArgs '-Dnet.bytebuddy.experimental=true'
+    jvmArgs '-Dspring.datasource.url=jdbc:postgresql://localhost:5434/kanban_test'
+    jvmArgs '-Dspring.datasource.username=kanban'
+    jvmArgs '-Dspring.datasource.password=kanban123'
+    jvmArgs '-Dspring.datasource.hikari.pool-name=KanbanTestPool'
+    jvmArgs '-Djwt.secret=test-secret-key-for-testing-only-12345678'
+    environment 'SPRING_DATASOURCE_URL', System.getenv('SPRING_DATASOURCE_URL') ?: 'jdbc:postgresql://localhost:5434/kanban_test'
+    environment 'SPRING_DATASOURCE_USERNAME', System.getenv('SPRING_DATASOURCE_USERNAME') ?: 'kanban'
+    environment 'SPRING_DATASOURCE_PASSWORD', System.getenv('SPRING_DATASOURCE_PASSWORD') ?: 'kanban123'
+    environment 'JWT_SECRET', System.getenv('JWT_SECRET') ?: 'test-secret-key-for-testing-only-12345678'
+}

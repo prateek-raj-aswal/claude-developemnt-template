@@ -1,0 +1,174 @@
+'use client'
+import { useSortable } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
+import { T, darkenHex, THEMES } from '@/lib/theme'
+import type { CardResponse, Priority } from '@/types/api'
+import Icon from '@/components/ui/Icon'
+import { useThemeStore } from '@/store/themeStore'
+
+const PRIORITY_COLOR: Record<Priority, string> = {
+  NONE: 'transparent',
+  LOW: '#3b82f6',
+  MEDIUM: '#eab308',
+  HIGH: '#f97316',
+  URGENT: '#ef4444',
+}
+
+interface Props {
+  card: CardResponse
+  onClick?: () => void
+}
+
+function LabelPill({ name, color }: { name: string; color: string }) {
+  return (
+    <span style={{
+      display: 'inline-flex', alignItems: 'center',
+      fontSize: 10.5, fontWeight: 600, letterSpacing: '.02em',
+      padding: '2px 7px', borderRadius: 4,
+      background: color + '28',
+      color: darkenHex(color, 0.12),
+      textTransform: 'uppercase',
+      whiteSpace: 'nowrap',
+    }}>
+      {name}
+    </span>
+  )
+}
+
+export default function CardItem({ card, onClick }: Props) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
+    useSortable({ id: card.id })
+
+  const themeName = useThemeStore(s => s.theme)
+  const glass = THEMES[themeName].glass
+
+  const isOverdue = card.dueDate ? new Date(card.dueDate) < new Date() : false
+  const priority = card.priority ?? 'NONE'
+  const subtaskTotal = card.subtaskTotal ?? 0
+  const subtaskDone = card.subtaskDone ?? 0
+  const commentCount = card.commentCount ?? 0
+  const assigneeCount = card.assignees?.length ?? 0
+  const hasMeta = card.dueDate || assigneeCount > 0 || priority !== 'NONE' || subtaskTotal > 0 || commentCount > 0
+
+  return (
+    <div
+      ref={setNodeRef}
+      {...attributes}
+      {...listeners}
+      onClick={onClick}
+      style={{
+        background: T.card,
+        border: `1px solid ${T.cardBorder}`,
+        borderRadius: 8,
+        boxShadow: isDragging ? 'none' : T.cardShadow,
+        padding: 12,
+        display: 'flex', flexDirection: 'column', gap: 8,
+        cursor: isDragging ? 'grabbing' : 'pointer',
+        position: 'relative',
+        transition: transition || 'box-shadow .12s',
+        transform: CSS.Transform.toString(transform) ?? undefined,
+        opacity: isDragging ? 0.4 : 1,
+        touchAction: 'none',
+        backdropFilter: glass ? 'blur(8px)' : undefined,
+        overflow: 'hidden',
+      }}
+    >
+      {/* Colour accent stripe */}
+      {card.color && (
+        <div style={{
+          height: 3,
+          background: card.color,
+          borderRadius: 'var(--card-radius, 8px) var(--card-radius, 8px) 0 0',
+          margin: '-12px -12px 0 -12px',
+          flexShrink: 0,
+        }} />
+      )}
+
+      {/* Labels */}
+      {card.labels.length > 0 && (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+          {card.labels.map(l => <LabelPill key={l.id} name={l.name} color={l.color} />)}
+        </div>
+      )}
+
+      {/* Title */}
+      <div style={{
+        fontSize: 13, lineHeight: 1.4, fontWeight: 500,
+        color: T.text,
+      }}>{card.title}</div>
+
+      {/* Meta row */}
+      {hasMeta && (
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 8,
+          fontSize: 11.5, color: T.textMuted,
+        }}>
+          {priority !== 'NONE' && (
+            <span style={{
+              display: 'inline-flex', alignItems: 'center', gap: 3,
+              fontSize: 10, fontWeight: 700, letterSpacing: '.04em',
+              color: PRIORITY_COLOR[priority],
+            }}>
+              <span style={{
+                width: 6, height: 6, borderRadius: '50%',
+                background: PRIORITY_COLOR[priority], flexShrink: 0,
+              }} />
+              {priority}
+            </span>
+          )}
+          {card.dueDate && (
+            <span style={{
+              display: 'inline-flex', alignItems: 'center', gap: 4,
+              fontWeight: 500,
+              color: isOverdue ? T.danger : T.textMuted,
+              background: isOverdue ? '#fee2e2' : 'transparent',
+              padding: isOverdue ? '1px 6px' : 0,
+              borderRadius: 4,
+            }}>
+              <Icon name="clock" size={11} sw={1.6} />
+              {card.dueDate}
+            </span>
+          )}
+          <span style={{ flex: 1 }} />
+          {subtaskTotal > 0 && (
+            <span style={{
+              display: 'inline-flex', alignItems: 'center', gap: 3,
+              fontSize: 10, color: subtaskDone === subtaskTotal ? T.ok : T.textMuted,
+              fontWeight: 600,
+            }}>
+              <Icon name="check" size={10} sw={subtaskDone === subtaskTotal ? 2.5 : 1.8} />
+              {subtaskDone}/{subtaskTotal}
+            </span>
+          )}
+          {commentCount > 0 && (
+            <span style={{
+              display: 'inline-flex', alignItems: 'center', gap: 3,
+              fontSize: 10, color: T.textMuted, fontWeight: 600,
+            }}>
+              <Icon name="msg" size={10} sw={1.8} />
+              {commentCount}
+            </span>
+          )}
+          {assigneeCount > 0 && (
+            <span style={{
+              display: 'inline-flex', alignItems: 'center',
+              height: 20, padding: '0 5px', borderRadius: 10,
+              background: T.accentSoft, color: T.accent,
+              fontSize: 10, fontWeight: 600, flexShrink: 0, gap: 3,
+            }}>
+              <Icon name="user" size={9} sw={1.5} />
+              {assigneeCount > 1 ? assigneeCount : ''}
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* Card short ID */}
+      <span style={{
+        position: 'absolute', top: 6, right: 8,
+        fontSize: 9.5, color: T.textFaint,
+        fontVariantNumeric: 'tabular-nums', fontWeight: 500, letterSpacing: '.04em',
+      }}>{card.readableId ?? card.id.slice(0, 8).toUpperCase()}</span>
+    </div>
+  )
+}
