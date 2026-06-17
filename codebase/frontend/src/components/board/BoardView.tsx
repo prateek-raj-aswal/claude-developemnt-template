@@ -12,7 +12,6 @@ import { T, THEMES } from '@/lib/theme'
 import { useThemeStore } from '@/store/themeStore'
 import AmbientBg from '@/components/ui/AmbientBg'
 import Icon from '@/components/ui/Icon'
-import Sidebar from './Sidebar'
 import ColumnList from './ColumnList'
 import SwimlaneView, { type GroupBy } from './SwimlaneView'
 import CardModal from './CardModal'
@@ -161,14 +160,10 @@ export default function BoardView({ boardId }: Props) {
   return (
     <div style={{
       position: 'relative',
-      display: 'flex', height: '100vh',
-      background: T.canvas, overflow: 'hidden',
-      fontFamily: 'ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif',
-      color: T.text,
+      display: 'flex', flexDirection: 'column',
+      height: '100%', overflow: 'hidden',
     }}>
       <AmbientBg />
-      <Sidebar currentBoardId={boardId} />
-
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' }}>
         {/* Top bar */}
         <div style={{

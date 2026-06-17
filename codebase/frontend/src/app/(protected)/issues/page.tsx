@@ -18,11 +18,9 @@ export default function IssuesPage() {
 
   return (
     <div style={{
-      minHeight: '100vh',
-      background: T.canvas,
-      padding: '24px 20px 80px',
-      maxWidth: 720,
-      margin: '0 auto',
+      height: '100%',
+      overflowY: 'auto',
+      padding: '24px 32px 40px',
     }}>
       <h1 style={{
         fontSize: 20, fontWeight: 700, color: T.text,

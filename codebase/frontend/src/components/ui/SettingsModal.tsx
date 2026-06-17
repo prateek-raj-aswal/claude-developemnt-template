@@ -67,82 +67,35 @@ interface SwatchProps {
 
 function ThemeSwatch({ name, active, onSelect }: SwatchProps) {
   const t = THEMES[name]
-  const bg = t.canvasGradient ?? t.canvas
 
   return (
     <button
       type="button"
       aria-pressed={active}
       aria-label={THEME_LABELS[name]}
-      title={THEME_LABELS[name]}
       onClick={() => onSelect(name)}
       style={{
-        position: 'relative',
-        width: '100%',
-        paddingBottom: '72%',
-        borderRadius: 8,
-        border: active ? `2px solid ${t.accent}` : '2px solid transparent',
-        outline: active ? `3px solid ${t.accent}` : '3px solid transparent',
-        outlineOffset: 1,
-        background: bg,
+        display: 'flex',
+        alignItems: 'center',
+        gap: 6,
+        padding: '5px 10px',
+        borderRadius: 6,
+        border: active ? `2px solid ${t.accent}` : `2px solid ${T.cardBorder}`,
+        background: active ? t.accent : T.hover,
+        color: active ? t.accentText : T.text,
         cursor: 'pointer',
-        padding: 0,
-        overflow: 'hidden',
-        transition: 'outline 0.12s, border-color 0.12s',
-        boxShadow: active
-          ? `0 0 0 2px ${t.accent}44`
-          : '0 1px 3px rgba(0,0,0,.15)',
+        fontSize: 12,
+        fontWeight: active ? 600 : 500,
+        whiteSpace: 'nowrap',
+        transition: 'border-color 0.12s, background 0.12s',
       }}
     >
-      {/* Sidebar strip preview */}
-      <div style={{
-        position: 'absolute', top: 0, left: 0, bottom: 0,
-        width: '28%',
-        background: t.sidebar,
-        borderRight: `1px solid ${t.sidebarBorder}`,
+      <span style={{
+        width: 8, height: 8, borderRadius: '50%', flexShrink: 0,
+        background: active ? t.accentText : t.accent,
+        opacity: active ? 0.8 : 1,
       }} />
-      {/* Card preview */}
-      <div style={{
-        position: 'absolute', top: '18%', left: '34%', right: '8%',
-        height: '28%',
-        background: t.card,
-        border: `1px solid ${t.cardBorder}`,
-        borderRadius: 4,
-      }} />
-      {/* Accent dot */}
-      <div style={{
-        position: 'absolute', bottom: 5, right: 5,
-        width: 8, height: 8, borderRadius: '50%',
-        background: t.accent,
-        boxShadow: `0 0 0 2px ${t.sidebar}`,
-      }} />
-      {/* Active check badge */}
-      {active && (
-        <div style={{
-          position: 'absolute', top: 4, right: 4,
-          width: 16, height: 16, borderRadius: '50%',
-          background: t.accent, color: t.accentText,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}>
-          <Icon name="check" size={10} sw={2.5} style={{ color: t.accentText }} />
-        </div>
-      )}
-      {/* Label */}
-      <div style={{
-        position: 'absolute', bottom: 0, left: 0, right: 0,
-        padding: '2px 4px',
-        fontSize: 9,
-        fontWeight: 600,
-        color: t.text,
-        background: `${t.sidebar}cc`,
-        textAlign: 'center',
-        letterSpacing: '.02em',
-        overflow: 'hidden',
-        textOverflow: 'ellipsis',
-        whiteSpace: 'nowrap',
-      }}>
-        {THEME_LABELS[name]}
-      </div>
+      {THEME_LABELS[name]}
     </button>
   )
 }
@@ -167,11 +120,7 @@ function ThemeGroup({ label, themes, activeTheme, onSelect }: ThemeGroupProps) {
       }}>
         {label}
       </div>
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(72px, 1fr))',
-        gap: 8,
-      }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
         {themes.map(name => (
           <ThemeSwatch
             key={name}

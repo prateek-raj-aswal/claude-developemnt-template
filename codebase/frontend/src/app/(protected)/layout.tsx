@@ -1,11 +1,14 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { isAuthenticated } from '@/lib/auth'
+import Sidebar from '@/components/board/Sidebar'
 import BottomNav from '@/components/ui/BottomNav'
+import { T } from '@/lib/theme'
 
 export default function ProtectedLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter()
+  const pathname = usePathname()
   const [ready, setReady] = useState(false)
 
   useEffect(() => {
@@ -16,7 +19,6 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
     setReady(true)
   }, [router])
 
-  // Listen for session expiry events dispatched by api.ts
   useEffect(() => {
     function handleUnauthorized() {
       router.replace('/login')
@@ -26,10 +28,22 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
   }, [router])
 
   if (!ready) return null
+
+  const boardMatch = pathname.match(/^\/boards\/([^/]+)/)
+  const currentBoardId = boardMatch?.[1]
+
   return (
-    <>
-      {children}
+    <div style={{
+      display: 'flex', height: '100vh', overflow: 'hidden',
+      background: T.canvas,
+      fontFamily: 'ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif',
+      color: T.text,
+    }}>
+      <Sidebar currentBoardId={currentBoardId} />
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' }}>
+        {children}
+      </div>
       <BottomNav />
-    </>
+    </div>
   )
 }
