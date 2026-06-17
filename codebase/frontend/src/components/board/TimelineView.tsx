@@ -4,7 +4,6 @@ import { api } from '@/lib/api'
 import { T } from '@/lib/theme'
 import type { TimelineCardResponse } from '@/types/api'
 import Icon from '@/components/ui/Icon'
-import Sidebar from './Sidebar'
 import CardModal from './CardModal'
 
 const DAY_W = 28          // px per day column
@@ -211,12 +210,9 @@ export default function TimelineView({ boardId }: Props) {
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', height: '100vh', overflow: 'hidden', background: T.canvas, color: T.text }}>
-        <Sidebar currentBoardId={boardId} />
-        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div data-testid="timeline-loading" style={{ fontSize: 13, color: T.textFaint }}>
-            Loading…
-          </div>
+      <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', background: T.canvas, color: T.text }}>
+        <div data-testid="timeline-loading" style={{ fontSize: 13, color: T.textFaint }}>
+          Loading…
         </div>
       </div>
     )
@@ -224,12 +220,9 @@ export default function TimelineView({ boardId }: Props) {
 
   if (error) {
     return (
-      <div style={{ display: 'flex', height: '100vh', overflow: 'hidden', background: T.canvas, color: T.text }}>
-        <Sidebar currentBoardId={boardId} />
-        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div data-testid="timeline-error" style={{ fontSize: 13, color: '#ef4444' }}>
-            {error}
-          </div>
+      <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', background: T.canvas, color: T.text }}>
+        <div data-testid="timeline-error" style={{ fontSize: 13, color: '#ef4444' }}>
+          {error}
         </div>
       </div>
     )
@@ -237,13 +230,9 @@ export default function TimelineView({ boardId }: Props) {
 
   return (
     <div style={{
-      display: 'flex', height: '100vh', overflow: 'hidden',
+      height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden',
       background: T.canvas, color: T.text,
-      fontFamily: 'ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif',
     }}>
-      <Sidebar currentBoardId={boardId} />
-
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         {/* Top bar */}
         <div style={{
           height: 44, flexShrink: 0, display: 'flex', alignItems: 'center',
@@ -587,7 +576,6 @@ export default function TimelineView({ boardId }: Props) {
             </div>
           </div>
         </div>
-      </div>
 
       {/* CardModal */}
       {selectedCard && (

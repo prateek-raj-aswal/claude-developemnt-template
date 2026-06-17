@@ -4,7 +4,6 @@ import { api } from '@/lib/api'
 import { T } from '@/lib/theme'
 import type { BoardResponse, CardResponse } from '@/types/api'
 import Icon from '@/components/ui/Icon'
-import Sidebar from './Sidebar'
 
 const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
@@ -67,13 +66,9 @@ export default function CalendarView({ boardId }: Props) {
 
   return (
     <div style={{
-      display: 'flex', height: '100vh', overflow: 'hidden',
-      fontFamily: 'ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif',
+      height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden',
       background: T.canvas, color: T.text,
     }}>
-      <Sidebar currentBoardId={boardId} />
-
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         {/* Top bar */}
         <div style={{
           height: 44, flexShrink: 0, display: 'flex', alignItems: 'center',
@@ -233,7 +228,6 @@ export default function CalendarView({ boardId }: Props) {
             </div>
           </div>
         )}
-      </div>
     </div>
   )
 }

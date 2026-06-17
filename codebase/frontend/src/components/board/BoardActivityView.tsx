@@ -4,7 +4,6 @@ import { api } from '@/lib/api'
 import { T } from '@/lib/theme'
 import type { ActivityLogResponse } from '@/types/api'
 import Icon from '@/components/ui/Icon'
-import Sidebar from './Sidebar'
 
 interface Props {
   boardId: string
@@ -30,14 +29,10 @@ export default function BoardActivityView({ boardId }: Props) {
 
   return (
     <div style={{
-      display: 'flex', height: '100vh',
+      height: '100%', display: 'flex', flexDirection: 'column', minWidth: 0,
       background: T.canvas, overflow: 'hidden',
-      fontFamily: 'ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif',
       color: T.text,
     }}>
-      <Sidebar currentBoardId={boardId} />
-
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' }}>
         {/* Top bar */}
         <div style={{
           height: 44, flexShrink: 0,
@@ -107,6 +102,5 @@ export default function BoardActivityView({ boardId }: Props) {
           )}
         </div>
       </div>
-    </div>
   )
 }
