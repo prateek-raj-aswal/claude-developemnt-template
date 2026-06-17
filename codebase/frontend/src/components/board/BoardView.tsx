@@ -164,7 +164,7 @@ export default function BoardView({ boardId }: Props) {
       height: '100%', overflow: 'hidden',
     }}>
       <AmbientBg />
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' }}>
+      <div style={{ position: 'relative', zIndex: 1, flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' }}>
         {/* Top bar */}
         <div style={{
           height: 44, flexShrink: 0,
@@ -446,6 +446,16 @@ export default function BoardView({ boardId }: Props) {
         <div data-testid="board-area" style={{ flex: 1, minHeight: 0, paddingBottom: isMobile ? 56 : 0 }}>
           {!board ? (
             <div style={{ padding: 24, color: T.textMuted, fontSize: 13 }}>Loading…</div>
+          ) : rawColumns.length === 0 ? (
+            <div style={{
+              height: '100%', display: 'flex', flexDirection: 'column',
+              alignItems: 'center', justifyContent: 'center', gap: 8, padding: 24,
+            }}>
+              <div style={{ fontSize: 15, fontWeight: 600, color: T.text }}>No columns yet</div>
+              <div style={{ fontSize: 13, color: T.textMuted, textAlign: 'center', maxWidth: 360 }}>
+                Add your first column using the “Column name” field in the toolbar above to start organizing cards.
+              </div>
+            </div>
           ) : isMobile ? (
             /* Mobile: column tabs + single column */
             <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
