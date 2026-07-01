@@ -228,6 +228,29 @@ export default function TimelineView({ boardId }: Props) {
     )
   }
 
+  if (seenCols.length === 0 && noDatesCards.length === 0) {
+    return (
+      <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden', background: T.canvas, color: T.text }}>
+        <div style={{ height: 44, flexShrink: 0, display: 'flex', alignItems: 'center', padding: '0 14px', gap: 14, borderBottom: `1px solid ${T.topbarBorder}`, background: T.topbar }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12.5, color: T.textMuted }}>
+            <a href="/boards" style={{ color: T.textMuted, textDecoration: 'none' }}>My Boards</a>
+            <Icon name="chevron" size={10} sw={2} />
+            <a href={`/boards/${boardId}`} style={{ color: T.text, fontWeight: 600, textDecoration: 'none' }}>{boardName || '…'}</a>
+            <Icon name="chevron" size={10} sw={2} />
+            <span style={{ color: T.textMuted }}>Timeline</span>
+          </div>
+        </div>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+          <Icon name="timeline" size={32} sw={1.2} style={{ color: T.textFaint }} />
+          <div data-testid="timeline-empty" style={{ fontSize: 14, fontWeight: 600, color: T.textMuted }}>Nothing scheduled</div>
+          <div style={{ fontSize: 13, color: T.textFaint, textAlign: 'center', maxWidth: 300 }}>
+            Add start or due dates to cards to see them on the timeline.
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div style={{
       height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden',
@@ -382,11 +405,19 @@ export default function TimelineView({ boardId }: Props) {
                   bottom: 0,
                   left: LEFT_PANEL + todayOffset * DAY_W,
                   width: 2,
-                  background: T.accent,
+                  background: '#ef4444',
                   zIndex: 5,
                   pointerEvents: 'none',
                 }}
-              />
+              >
+                {/* cap dot */}
+                <div style={{
+                  position: 'absolute', top: 0,
+                  left: '50%', transform: 'translateX(-50%)',
+                  width: 8, height: 8, borderRadius: '50%',
+                  background: '#ef4444',
+                }} />
+              </div>
 
               {/* Column swimlanes */}
               {seenCols.map(colName => (
@@ -561,18 +592,6 @@ export default function TimelineView({ boardId }: Props) {
                 </div>
               )}
 
-              {cards.length === 0 && (
-                <div style={{
-                  height: 200,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: 13,
-                  color: T.textFaint,
-                }}>
-                  No cards have dates set. Add start or due dates to cards to see them here.
-                </div>
-              )}
             </div>
           </div>
         </div>

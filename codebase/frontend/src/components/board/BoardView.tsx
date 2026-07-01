@@ -10,7 +10,6 @@ import { useConfigStore } from '@/store/configStore'
 import type { ColumnResponse, CardResponse, Priority, MemberResponse } from '@/types/api'
 import { T, THEMES } from '@/lib/theme'
 import { useThemeStore } from '@/store/themeStore'
-import AmbientBg from '@/components/ui/AmbientBg'
 import Icon from '@/components/ui/Icon'
 import ColumnList from './ColumnList'
 import SwimlaneView, { type GroupBy } from './SwimlaneView'
@@ -163,7 +162,6 @@ export default function BoardView({ boardId }: Props) {
       display: 'flex', flexDirection: 'column',
       height: '100%', overflow: 'hidden',
     }}>
-      <AmbientBg />
       <div style={{ position: 'relative', zIndex: 1, flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' }}>
         {/* Top bar */}
         <div style={{

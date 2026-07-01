@@ -13,5 +13,6 @@ public record CreateBoardRequest(
         @NotBlank @Size(min = 1, max = 255) String name,
         UUID workspaceId,
         @Size(max = 2000) String description,
-        @Size(max = 10) String emoji
+        @Size(max = 10) String emoji,
+        @Size(max = 20) String color
 ) {}

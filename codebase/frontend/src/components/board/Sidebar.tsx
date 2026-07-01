@@ -176,8 +176,8 @@ export default function Sidebar({ currentBoardId }: Props) {
     <aside style={{
       width: collapsed ? 48 : 232, flexShrink: 0,
       background: T.sidebar, borderRight: `1px solid ${T.sidebarBorder}`,
-      display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden',
-      paddingBottom: isMobile ? 56 : 0,
+      display: isMobile ? 'none' : 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden',
+      paddingBottom: 0,
       transition: 'width 0.18s ease',
       backdropFilter: glass ? 'blur(20px) saturate(140%)' : undefined,
     }}>

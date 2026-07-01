@@ -94,6 +94,7 @@ public class BoardService {
         board.setWorkspaceId(request.workspaceId());
         board.setDescription(request.description());
         board.setEmoji(emoji);
+        board.setColor(request.color());
         board = boardRepository.save(board);
 
         BoardMember member = new BoardMember();
@@ -162,6 +163,9 @@ public class BoardService {
                         "emoji must not exceed 10 characters");
             }
             board.setEmoji(request.emoji());
+        }
+        if (request.color() != null) {
+            board.setColor(request.color());
         }
         board.setName(request.name());
         board.setDescription(request.description());
@@ -289,6 +293,6 @@ public class BoardService {
         String emoji = board.getEmoji() != null ? board.getEmoji() : "◇";
         return new BoardResponse(board.getId(), board.getName(), board.getOwnerId(),
                 role, board.getCreatedAt(), board.getWorkspaceId(), taskCount, columns,
-                board.getDescription(), groupBy, starred, emoji);
+                board.getDescription(), groupBy, starred, emoji, board.getColor());
     }
 }

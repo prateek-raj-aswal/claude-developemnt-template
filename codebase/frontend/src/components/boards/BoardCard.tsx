@@ -21,7 +21,7 @@ function pickColor(id: string) {
 
 export default function BoardCard({ board, onDelete, isStarred: initialStarred = false }: Props) {
   const [starred, setStarred] = useState(initialStarred)
-  const color = pickColor(board.id)
+  const color = board.color ?? pickColor(board.id)
   const initial = board.name.charAt(0).toUpperCase()
 
   async function toggleStar(e: React.MouseEvent) {
@@ -66,6 +66,7 @@ export default function BoardCard({ board, onDelete, isStarred: initialStarred =
 
       <button
         onClick={toggleStar}
+        aria-label={starred ? 'Unstar board' : 'Star board'}
         title={starred ? 'Unstar board' : 'Star board'}
         style={{
           background: 'none', border: 'none', cursor: 'pointer',

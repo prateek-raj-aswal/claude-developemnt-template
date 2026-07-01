@@ -29,7 +29,7 @@ function headerTextColors(hex: string | undefined) {
 }
 
 // Module-level components per ARCH-004 pattern
-function ColorSwatch24Button({ color, onClick }: { color: string | null | undefined; onClick: () => void }) {
+function ColorSwatch24Button({ color, ringColor, onClick }: { color: string | null | undefined; ringColor: string; onClick: () => void }) {
   const hex = color && color.startsWith('#') ? color : null
   return (
     <button
@@ -40,7 +40,7 @@ function ColorSwatch24Button({ color, onClick }: { color: string | null | undefi
         height: 16,
         borderRadius: '50%',
         background: hex ?? 'transparent',
-        border: hex ? 'none' : `1.5px dashed ${T.textFaint}`,
+        border: hex ? `1.5px solid ${ringColor}` : `1.5px dashed ${ringColor}`,
         cursor: 'pointer',
         padding: 0,
         flexShrink: 0,
@@ -317,6 +317,8 @@ export default function Column({ column, onDeleteColumn, onRenameColumn, onSelec
         opacity: isDragging ? 0.4 : 1,
         touchAction: 'none',
         backdropFilter: glass ? 'blur(16px) saturate(130%)' : undefined,
+        position: 'relative',
+        zIndex: paletteOpen ? 20 : undefined,
       }}
     >
       {/* Header */}
@@ -378,6 +380,7 @@ export default function Column({ column, onDeleteColumn, onRenameColumn, onSelec
           <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
             <ColorSwatch24Button
               color={column.headerColor}
+              ringColor={hc.faint}
               onClick={() => { if (canEdit) setPaletteOpen(true) }}
             />
             {paletteOpen && (

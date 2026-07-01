@@ -24,6 +24,13 @@ public class ColumnController {
         this.columnService = columnService;
     }
 
+    @GetMapping("/api/v1/boards/{boardId}/columns")
+    public ResponseEntity<List<ColumnResponse>> getColumns(
+            @PathVariable UUID boardId,
+            @AuthenticationPrincipal AuthenticatedUser user) {
+        return ResponseEntity.ok(columnService.getColumnsForBoard(boardId, user.id()));
+    }
+
     @PostMapping("/api/v1/boards/{boardId}/columns")
     public ResponseEntity<ColumnResponse> create(
             @PathVariable UUID boardId,

@@ -22,6 +22,10 @@ export interface BoardResponse {
   taskCount?: number
   columns?: ColumnResponse[]
   groupBy?: string
+  description?: string | null
+  emoji?: string
+  color?: string | null
+  starred?: boolean
 }
 
 export interface ModuleResponse {

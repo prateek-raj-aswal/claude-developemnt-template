@@ -30,6 +30,9 @@ public class Board {
     @Column(name = "emoji", nullable = false, length = 10)
     private String emoji = "◇";
 
+    @Column(name = "color", length = 20)
+    private String color;
+
     @Column(name = "group_by", length = 20)
     private String groupBy = "NONE";
 
@@ -60,6 +63,8 @@ public class Board {
     public void setDescription(String description) { this.description = description; }
     public String getEmoji() { return emoji; }
     public void setEmoji(String emoji) { this.emoji = emoji; }
+    public String getColor() { return color; }
+    public void setColor(String color) { this.color = color; }
     public String getGroupBy() { return groupBy; }
     public void setGroupBy(String groupBy) { this.groupBy = groupBy; }
     public Instant getDeletedAt() { return deletedAt; }

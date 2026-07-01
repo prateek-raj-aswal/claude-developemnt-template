@@ -20,5 +20,6 @@ public record BoardResponse(
         String description,
         String groupBy,
         boolean starred,
-        String emoji
+        String emoji,
+        String color
 ) {}

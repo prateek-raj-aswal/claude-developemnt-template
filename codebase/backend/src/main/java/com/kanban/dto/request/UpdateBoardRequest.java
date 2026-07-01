@@ -12,5 +12,6 @@ public record UpdateBoardRequest(
         @NotBlank @Size(min = 1, max = 255) String name,
         @Size(max = 2000) String description,
         String groupBy,
-        @Size(max = 10) String emoji
+        @Size(max = 10) String emoji,
+        @Size(max = 20) String color
 ) {}

@@ -2,10 +2,14 @@
 import { useEffect, useState } from 'react'
 
 export default function BootSplash() {
-  const [visible, setVisible] = useState(true)
+  const [visible, setVisible] = useState(false)
   const [fading, setFading] = useState(false)
 
   useEffect(() => {
+    // Only show on cold start — once per browser session
+    if (sessionStorage.getItem('kanban-splash')) return
+    sessionStorage.setItem('kanban-splash', '1')
+    setVisible(true)
     const fadeTimer = setTimeout(() => setFading(true), 800)
     const hideTimer = setTimeout(() => setVisible(false), 1200)
     return () => { clearTimeout(fadeTimer); clearTimeout(hideTimer) }

@@ -103,6 +103,15 @@ public class ColumnService {
                 new BoardEventPayload.ColumnDeletedData(deletedId)));
     }
 
+    @Transactional(readOnly = true)
+    public List<ColumnResponse> getColumnsForBoard(UUID boardId, UUID requestingUserId) {
+        boardRepository.findActiveById(boardId)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "BOARD_NOT_FOUND", "Board not found"));
+        accessPolicy.assertAccess(boardId, requestingUserId, BoardAction.READ);
+        return columnRepository.findActiveByBoardId(boardId).stream()
+                .map(this::toResponse).toList();
+    }
+
     @Transactional
     public List<ColumnResponse> reorderColumns(UUID boardId, List<UUID> orderedColumnIds, UUID requestingUserId) {
         boardRepository.findActiveById(boardId)
