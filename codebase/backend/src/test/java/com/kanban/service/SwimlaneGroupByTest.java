@@ -81,7 +81,7 @@ class SwimlaneGroupByTest {
         when(boardRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
         when(memberRepository.findByBoardIdAndUserId(boardId, userId)).thenReturn(Optional.of(boardMember));
 
-        UpdateBoardRequest req = new UpdateBoardRequest("Test Board", null, "ASSIGNEE", null);
+        UpdateBoardRequest req = new UpdateBoardRequest("Test Board", null, "ASSIGNEE", null, null);
         BoardResponse res = boardService.updateBoard(boardId, req, userId);
 
         assertThat(res.groupBy()).isEqualTo("ASSIGNEE");
@@ -98,7 +98,7 @@ class SwimlaneGroupByTest {
         when(boardRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
         when(memberRepository.findByBoardIdAndUserId(boardId, userId)).thenReturn(Optional.of(boardMember));
 
-        UpdateBoardRequest req = new UpdateBoardRequest("Test Board", null, "MODULE", null);
+        UpdateBoardRequest req = new UpdateBoardRequest("Test Board", null, "MODULE", null, null);
         BoardResponse res = boardService.updateBoard(boardId, req, userId);
 
         // Response must succeed (no exception) and groupBy is MODULE
@@ -112,7 +112,7 @@ class SwimlaneGroupByTest {
         when(boardRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
         when(memberRepository.findByBoardIdAndUserId(boardId, userId)).thenReturn(Optional.of(boardMember));
 
-        UpdateBoardRequest req = new UpdateBoardRequest("Test Board", null, "NONE", null);
+        UpdateBoardRequest req = new UpdateBoardRequest("Test Board", null, "NONE", null, null);
         BoardResponse res = boardService.updateBoard(boardId, req, userId);
 
         assertThat(res.groupBy()).isEqualTo("NONE");
@@ -127,7 +127,7 @@ class SwimlaneGroupByTest {
     void updateBoard_withInvalidGroupBy_throws422() {
         when(boardRepository.findActiveById(boardId)).thenReturn(Optional.of(board));
 
-        UpdateBoardRequest req = new UpdateBoardRequest("Test Board", null, "INVALID_VALUE", null);
+        UpdateBoardRequest req = new UpdateBoardRequest("Test Board", null, "INVALID_VALUE", null, null);
 
         assertThatThrownBy(() -> boardService.updateBoard(boardId, req, userId))
                 .isInstanceOf(ApiException.class)
@@ -163,7 +163,7 @@ class SwimlaneGroupByTest {
         when(memberRepository.findByBoardIdAndUserId(boardId, userId)).thenReturn(Optional.of(boardMember));
 
         // null groupBy in request -> keep existing PRIORITY
-        UpdateBoardRequest req = new UpdateBoardRequest("Test Board", null, null, null);
+        UpdateBoardRequest req = new UpdateBoardRequest("Test Board", null, null, null, null);
         BoardResponse res = boardService.updateBoard(boardId, req, userId);
 
         assertThat(res.groupBy()).isEqualTo("PRIORITY");

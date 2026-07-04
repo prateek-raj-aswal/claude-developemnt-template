@@ -82,7 +82,7 @@ class BoardWorkspaceTest {
         });
         when(memberRepository.save(any())).thenReturn(boardMember);
 
-        BoardResponse res = boardService.createBoard(new CreateBoardRequest("New Board", workspaceId, null, null), userId);
+        BoardResponse res = boardService.createBoard(new CreateBoardRequest("New Board", workspaceId, null, null, null), userId);
 
         assertThat(res.workspaceId()).isEqualTo(workspaceId);
 
@@ -100,7 +100,7 @@ class BoardWorkspaceTest {
         });
         when(memberRepository.save(any())).thenReturn(boardMember);
 
-        BoardResponse res = boardService.createBoard(new CreateBoardRequest("New Board", null, null, null), userId);
+        BoardResponse res = boardService.createBoard(new CreateBoardRequest("New Board", null, null, null, null), userId);
 
         assertThat(res.workspaceId()).isNull();
     }

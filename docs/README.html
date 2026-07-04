@@ -65,7 +65,7 @@ cd codebase/frontend && npx vitest run
     </tr>
     <tr>
       <td>Boards, Columns &amp; Cards</td>
-      <td>CRUD /boards, /boards/{id}/columns, /columns/{id}/cards, card move, column reorder, search</td>
+      <td>CRUD /boards (name, emoji, color, description), GET /boards/{id}/columns <span class="badge badge-new">FIXED</span>, /columns/{id}/cards, card move, column reorder, search</td>
       <td><a href="api/boards.html">api/boards.html</a></td>
     </tr>
     <tr>
@@ -150,6 +150,20 @@ cd codebase/frontend && npx vitest run
 </p>
 <p><a href="PHASE-P2-summary.html">PHASE-P2-summary.html</a></p>
 
+<!-- ─── POST-SHIP QA PASS ────────────────────────────────────────────── -->
+<h2>Post-Ship QA Pass <span class="badge badge-new">NEW</span></h2>
+<p>
+  Exploratory front-end QA pass against the live PHASE-P2 deployment (2026-07-01) found 10 defects
+  (0 Critical, 3 High, 4 Medium, 3 Low) — all fixed in commit <code>7869ff4</code>. Notable fixes:
+  boot splash now fires only on initial load (not every navigation), glassmorphism/AmbientBg rendering
+  restored, mobile sidebar hidden below 768px, Timeline empty-state message added, board <code>color</code>
+  field now persists (migration V36), a new free-form column <code>color</code> field was added distinct
+  from the legacy <code>headerColor</code> token (migration V35), <code>GET /api/v1/boards/{id}/columns</code>
+  now returns a JSON array instead of an empty body, <code>/signup</code> redirects to <code>/register</code>,
+  and the board-card star button has an <code>aria-label</code>.
+</p>
+<p><a href="../.claude/memory/test-reports/bug-report.html">Full QA bug report (BUG-001 – BUG-010)</a></p>
+
 <!-- ─── STORY REGISTRY ───────────────────────────────────────────────── -->
 <h2>Story Registry (<code>docs/stories/</code>)</h2>
 <p>
@@ -177,7 +191,7 @@ cd codebase/frontend && npx vitest run
   <tbody>
     <tr><td>Backend</td><td>Java 21 + Spring Boot 3.3.x + Gradle</td><td>REST + WebSocket/STOMP; JWT auth; <code>/api/v1/</code> versioning</td></tr>
     <tr><td>Frontend</td><td>Next.js 14 (App Router) + TypeScript + Zustand</td><td>Client-rendered; vanilla CSS + custom theme system; no paid UI libs</td></tr>
-    <tr><td>Database</td><td>PostgreSQL 16 + Flyway 10.x</td><td>UUID PKs; Flyway at V34 (V33 = cards.start_date, V34 = boards.emoji); next migration must be V35</td></tr>
+    <tr><td>Database</td><td>PostgreSQL 16 + Flyway 10.x</td><td>UUID PKs; Flyway at V36 (V33 = cards.start_date, V34 = boards.emoji, V35 = columns.color, V36 = boards.color); next migration must be V37</td></tr>
     <tr><td>Auth</td><td>Short-lived JWT (15 min) + rotating refresh tokens (7 days)</td><td>refresh_tokens table in PostgreSQL; see ADR-001</td></tr>
     <tr><td>Authorization</td><td>RBAC: OWNER / ADMIN / MEMBER / VIEWER</td><td>Central policy classes; see ADR-002</td></tr>
     <tr><td>Readable IDs</td><td>PREFIX-NNN: US-NNN, FEAT-NNN, BUG-NNN</td><td>Workspace-scoped; SELECT FOR UPDATE counter; see ADR-003</td></tr>

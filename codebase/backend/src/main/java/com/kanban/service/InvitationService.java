@@ -106,7 +106,7 @@ public class InvitationService {
                 .map(b -> new BoardResponse(b.getId(), b.getName(), b.getOwnerId(), "MEMBER",
                         b.getCreatedAt(), b.getWorkspaceId(), 0, null, b.getDescription(),
                         b.getGroupBy() != null ? b.getGroupBy() : "NONE", false,
-                        b.getEmoji() != null ? b.getEmoji() : "◇"))
+                        b.getEmoji() != null ? b.getEmoji() : "◇", b.getColor()))
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "BOARD_NOT_FOUND", "Board not found"));
     }
 

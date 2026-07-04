@@ -74,7 +74,7 @@ async function uiLogin(page: Page, email = QA_EMAIL, password = QA_PASSWORD) {
   await page.locator('input[type="email"]').fill(email)
   await page.locator('input[type="password"]').fill(password)
   await page.locator('button[type="submit"]').click()
-  await page.waitForURL(url => !url.includes('/login'), { timeout: 10000 }).catch(() => {})
+  await page.waitForURL(url => !url.href.includes('/login'), { timeout: 10000 }).catch(() => {})
   await page.waitForTimeout(800)
 }
 
@@ -166,7 +166,7 @@ test.describe('QA-AUTH — Authentication', () => {
 
   test('unauthenticated access to /boards redirects to /login', async ({ page }) => {
     await page.goto('/boards')
-    await page.waitForURL(url => url.includes('/login'), { timeout: 6000 }).catch(() => {})
+    await page.waitForURL(url => url.href.includes('/login'), { timeout: 6000 }).catch(() => {})
     expect.soft(page.url(), 'Unauthenticated /boards should redirect to /login').toContain('/login')
   })
 
@@ -179,7 +179,7 @@ test.describe('QA-AUTH — Authentication', () => {
       return
     }
     await logoutBtn.click()
-    await page.waitForURL(url => url.includes('/login'), { timeout: 5000 }).catch(() => {})
+    await page.waitForURL(url => url.href.includes('/login'), { timeout: 5000 }).catch(() => {})
     expect.soft(page.url()).toContain('/login')
   })
 })
@@ -637,7 +637,7 @@ test.describe('QA-THEME — Theme System', () => {
 
     const backdropFilter = await page.locator('aside, [class*="sidebar" i]').first().evaluate(el => {
       const style = getComputedStyle(el)
-      return style.backdropFilter || style.webkitBackdropFilter || ''
+      return style.backdropFilter || (style as any).webkitBackdropFilter || ''
     }).catch(() => '')
 
     // blur should appear in backdrop-filter for premium glass themes
@@ -675,7 +675,7 @@ test.describe('QA-THEME — Theme System', () => {
 
     const backdropFilter = await page.locator('aside, [class*="sidebar" i]').first().evaluate(el => {
       const style = getComputedStyle(el)
-      return style.backdropFilter || style.webkitBackdropFilter || ''
+      return style.backdropFilter || (style as any).webkitBackdropFilter || ''
     }).catch(() => '')
 
     // Classic theme should have none/'' for backdrop-filter

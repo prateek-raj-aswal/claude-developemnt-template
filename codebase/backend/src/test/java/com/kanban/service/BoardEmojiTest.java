@@ -105,7 +105,7 @@ class BoardEmojiTest {
         });
         when(memberRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-        CreateBoardRequest req = new CreateBoardRequest("My Board", null, null, "★");
+        CreateBoardRequest req = new CreateBoardRequest("My Board", null, null, "★", null);
         BoardResponse res = boardService.createBoard(req, userId);
 
         assertThat(res.emoji()).isEqualTo("★");
@@ -124,7 +124,7 @@ class BoardEmojiTest {
         });
         when(memberRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-        CreateBoardRequest req = new CreateBoardRequest("My Board", null, null, null);
+        CreateBoardRequest req = new CreateBoardRequest("My Board", null, null, null, null);
         BoardResponse res = boardService.createBoard(req, userId);
 
         assertThat(res.emoji()).isEqualTo("◇");
@@ -136,7 +136,7 @@ class BoardEmojiTest {
 
     @Test
     void createBoard_withEmojiTooLong_throws422InvalidEmoji() {
-        CreateBoardRequest req = new CreateBoardRequest("My Board", null, null, "12345678901"); // 11 chars
+        CreateBoardRequest req = new CreateBoardRequest("My Board", null, null, "12345678901", null); // 11 chars
 
         assertThatThrownBy(() -> boardService.createBoard(req, userId))
                 .isInstanceOf(ApiException.class)
@@ -158,7 +158,7 @@ class BoardEmojiTest {
         });
         when(memberRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-        CreateBoardRequest req = new CreateBoardRequest("My Board", null, "Project board", null);
+        CreateBoardRequest req = new CreateBoardRequest("My Board", null, "Project board", null, null);
         BoardResponse res = boardService.createBoard(req, userId);
 
         assertThat(res.description()).isEqualTo("Project board");
@@ -172,7 +172,7 @@ class BoardEmojiTest {
         when(boardRepository.save(any(Board.class))).thenAnswer(inv -> inv.getArgument(0));
         when(memberRepository.findByBoardIdAndUserId(boardId, userId)).thenReturn(Optional.of(ownerMember));
 
-        UpdateBoardRequest req = new UpdateBoardRequest("My Board", null, null, "◆");
+        UpdateBoardRequest req = new UpdateBoardRequest("My Board", null, null, "◆", null);
         BoardResponse res = boardService.updateBoard(boardId, req, userId);
 
         assertThat(res.emoji()).isEqualTo("◆");
@@ -188,7 +188,7 @@ class BoardEmojiTest {
         doThrow(new ApiException(HttpStatus.FORBIDDEN, "FORBIDDEN", "Access denied"))
                 .when(accessPolicy).assertRole(boardId, userId, Role.ADMIN);
 
-        UpdateBoardRequest req = new UpdateBoardRequest("My Board", null, null, "◆");
+        UpdateBoardRequest req = new UpdateBoardRequest("My Board", null, null, "◆", null);
 
         assertThatThrownBy(() -> boardService.updateBoard(boardId, req, userId))
                 .isInstanceOf(ApiException.class)
@@ -205,7 +205,7 @@ class BoardEmojiTest {
     void updateBoard_onNonExistentBoard_throws404BoardNotFound() {
         when(boardRepository.findActiveById(boardId)).thenReturn(Optional.empty());
 
-        UpdateBoardRequest req = new UpdateBoardRequest("My Board", null, null, "◆");
+        UpdateBoardRequest req = new UpdateBoardRequest("My Board", null, null, "◆", null);
 
         assertThatThrownBy(() -> boardService.updateBoard(boardId, req, userId))
                 .isInstanceOf(ApiException.class)
@@ -226,7 +226,7 @@ class BoardEmojiTest {
         when(memberRepository.findByBoardIdAndUserId(boardId, userId)).thenReturn(Optional.of(ownerMember));
 
         // null emoji = no-op, keep existing ★
-        UpdateBoardRequest req = new UpdateBoardRequest("My Board", null, null, null);
+        UpdateBoardRequest req = new UpdateBoardRequest("My Board", null, null, null, null);
         BoardResponse res = boardService.updateBoard(boardId, req, userId);
 
         assertThat(res.emoji()).isEqualTo("★");

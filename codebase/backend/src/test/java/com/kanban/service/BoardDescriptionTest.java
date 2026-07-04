@@ -73,7 +73,7 @@ class BoardDescriptionTest {
         });
         when(memberRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-        CreateBoardRequest req = new CreateBoardRequest("My Board", null, "A useful description", null);
+        CreateBoardRequest req = new CreateBoardRequest("My Board", null, "A useful description", null, null);
         boardService.createBoard(req, userId);
 
         ArgumentCaptor<Board> captor = ArgumentCaptor.forClass(Board.class);
@@ -91,7 +91,7 @@ class BoardDescriptionTest {
         });
         when(memberRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-        CreateBoardRequest req = new CreateBoardRequest("My Board", null, null, null);
+        CreateBoardRequest req = new CreateBoardRequest("My Board", null, null, null, null);
         boardService.createBoard(req, userId);
 
         ArgumentCaptor<Board> captor = ArgumentCaptor.forClass(Board.class);
@@ -106,7 +106,7 @@ class BoardDescriptionTest {
         when(boardRepository.save(any(Board.class))).thenAnswer(inv -> inv.getArgument(0));
         when(memberRepository.findByBoardIdAndUserId(boardId, userId)).thenReturn(Optional.of(ownerMember));
 
-        UpdateBoardRequest req = new UpdateBoardRequest("Renamed", "Updated description", null, null);
+        UpdateBoardRequest req = new UpdateBoardRequest("Renamed", "Updated description", null, null, null);
         boardService.updateBoard(boardId, req, userId);
 
         ArgumentCaptor<Board> captor = ArgumentCaptor.forClass(Board.class);
@@ -122,7 +122,7 @@ class BoardDescriptionTest {
         when(boardRepository.save(any(Board.class))).thenAnswer(inv -> inv.getArgument(0));
         when(memberRepository.findByBoardIdAndUserId(boardId, userId)).thenReturn(Optional.of(ownerMember));
 
-        UpdateBoardRequest req = new UpdateBoardRequest("Renamed", null, null, null);
+        UpdateBoardRequest req = new UpdateBoardRequest("Renamed", null, null, null, null);
         boardService.updateBoard(boardId, req, userId);
 
         ArgumentCaptor<Board> captor = ArgumentCaptor.forClass(Board.class);

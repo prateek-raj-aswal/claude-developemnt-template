@@ -18,7 +18,7 @@ services:
 
   backend:
     build:
-      context: ./backend
+      context: ./codebase/backend
       dockerfile: Dockerfile
     restart: unless-stopped
     depends_on:
@@ -74,7 +74,7 @@ services:
 
   frontend:
     build:
-      context: ./frontend
+      context: ./codebase/frontend
       dockerfile: Dockerfile
       args:
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8080}

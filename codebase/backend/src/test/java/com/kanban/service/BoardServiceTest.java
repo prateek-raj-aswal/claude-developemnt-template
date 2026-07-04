@@ -77,7 +77,7 @@ class BoardServiceTest {
         when(boardRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
         when(memberRepository.findByBoardIdAndUserId(boardId, userId)).thenReturn(Optional.of(boardMember));
 
-        UpdateBoardRequest req = new UpdateBoardRequest("New Name", null, null, null);
+        UpdateBoardRequest req = new UpdateBoardRequest("New Name", null, null, null, null);
         BoardResponse res = boardService.updateBoard(boardId, req, userId);
 
         assertThat(res.name()).isEqualTo("New Name");
@@ -95,7 +95,7 @@ class BoardServiceTest {
         when(boardRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
         when(memberRepository.findByBoardIdAndUserId(boardId, userId)).thenReturn(Optional.of(boardMember));
 
-        boardService.updateBoard(boardId, new UpdateBoardRequest("X", null, null, null), userId);
+        boardService.updateBoard(boardId, new UpdateBoardRequest("X", null, null, null, null), userId);
 
         verify(accessPolicy).assertRole(boardId, userId, com.kanban.security.Role.ADMIN);
     }
@@ -105,7 +105,7 @@ class BoardServiceTest {
         when(boardRepository.findActiveById(boardId)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() ->
-            boardService.updateBoard(boardId, new UpdateBoardRequest("X", null, null, null), userId)
+            boardService.updateBoard(boardId, new UpdateBoardRequest("X", null, null, null, null), userId)
         ).isInstanceOf(ApiException.class)
          .hasFieldOrPropertyWithValue("status", HttpStatus.NOT_FOUND);
 
@@ -119,7 +119,7 @@ class BoardServiceTest {
             .when(accessPolicy).assertRole(boardId, userId, com.kanban.security.Role.ADMIN);
 
         assertThatThrownBy(() ->
-            boardService.updateBoard(boardId, new UpdateBoardRequest("X", null, null, null), userId)
+            boardService.updateBoard(boardId, new UpdateBoardRequest("X", null, null, null, null), userId)
         ).isInstanceOf(ApiException.class)
          .hasFieldOrPropertyWithValue("status", HttpStatus.FORBIDDEN);
 
@@ -132,7 +132,7 @@ class BoardServiceTest {
         when(boardRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
         when(memberRepository.findByBoardIdAndUserId(boardId, userId)).thenReturn(Optional.empty());
 
-        BoardResponse res = boardService.updateBoard(boardId, new UpdateBoardRequest("X", null, null, null), userId);
+        BoardResponse res = boardService.updateBoard(boardId, new UpdateBoardRequest("X", null, null, null, null), userId);
 
         assertThat(res.role()).isEqualTo("MEMBER");
     }

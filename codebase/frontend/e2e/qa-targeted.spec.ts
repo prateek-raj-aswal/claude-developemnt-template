@@ -14,7 +14,7 @@ async function login(page: Page) {
   await page.locator('input[type="email"]').fill(QA_EMAIL)
   await page.locator('input[type="password"]').fill(QA_PASSWORD)
   await page.locator('button[type="submit"]').click()
-  await page.waitForURL(url => !url.includes('/login'), { timeout: 10000 }).catch(() => {})
+  await page.waitForURL(url => !url.href.includes('/login'), { timeout: 10000 }).catch(() => {})
   await page.waitForTimeout(800)
 }
 

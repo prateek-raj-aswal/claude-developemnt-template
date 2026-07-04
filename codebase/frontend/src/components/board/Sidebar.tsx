@@ -114,12 +114,13 @@ export default function Sidebar({ currentBoardId }: Props) {
     }
   }
 
-  const NavItem = ({ label, icon, count, active, href, onClick }: {
-    label: string; icon?: IconKey; count?: number; active?: boolean; href?: string; onClick?: () => void
+  const NavItem = ({ label, icon, count, active, href, onClick, ariaLabel }: {
+    label: string; icon?: IconKey; count?: number; active?: boolean; href?: string; onClick?: () => void; ariaLabel?: string
   }) => (
     <a
       href={href ?? '#'}
-      title={collapsed ? label : undefined}
+      title={collapsed ? label : ariaLabel}
+      aria-label={ariaLabel}
       onClick={onClick ? (e) => { e.preventDefault(); onClick() } : undefined}
       style={{
         display: 'flex', alignItems: 'center',
@@ -295,7 +296,7 @@ export default function Sidebar({ currentBoardId }: Props) {
           {!collapsed && <SectionHead>Workspace</SectionHead>}
           <NavItem icon="user" label="Users" onClick={openUsersModal} active={false} />
           <NavItem icon="alert" label="Issues" href="/issues" active={pathname === '/issues'} />
-          <NavItem icon="cog" label="Settings" onClick={() => setSettingsOpen(true)} active={false} />
+          <NavItem icon="cog" label="Settings" onClick={() => setSettingsOpen(true)} active={false} ariaLabel="Settings" />
           <NavItem icon="plus" label="New workspace" onClick={() => setNewWsOpen(true)} active={false} />
         </div>
       </div>
