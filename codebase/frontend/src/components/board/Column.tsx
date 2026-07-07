@@ -1,5 +1,6 @@
 'use client'
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, forwardRef } from 'react'
+import { createPortal } from 'react-dom'
 import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { api, ApiError } from '@/lib/api'
@@ -29,34 +30,39 @@ function headerTextColors(hex: string | undefined) {
 }
 
 // Module-level components per ARCH-004 pattern
-function ColorSwatch24Button({ color, ringColor, onClick }: { color: string | null | undefined; ringColor: string; onClick: () => void }) {
-  const hex = color && color.startsWith('#') ? color : null
-  return (
-    <button
-      onClick={onClick}
-      title="Set header colour"
-      style={{
-        width: 16,
-        height: 16,
-        borderRadius: '50%',
-        background: hex ?? 'transparent',
-        border: hex ? `1.5px solid ${ringColor}` : `1.5px dashed ${ringColor}`,
-        cursor: 'pointer',
-        padding: 0,
-        flexShrink: 0,
-        display: 'inline-flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
-    />
-  )
-}
+const ColorSwatch24Button = forwardRef<HTMLButtonElement, { color: string | null | undefined; ringColor: string; onClick: () => void }>(
+  function ColorSwatch24Button({ color, ringColor, onClick }, ref) {
+    const hex = color && color.startsWith('#') ? color : null
+    return (
+      <button
+        ref={ref}
+        onClick={onClick}
+        title="Set header colour"
+        style={{
+          width: 16,
+          height: 16,
+          borderRadius: '50%',
+          background: hex ?? 'transparent',
+          border: hex ? `1.5px solid ${ringColor}` : `1.5px dashed ${ringColor}`,
+          cursor: 'pointer',
+          padding: 0,
+          flexShrink: 0,
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      />
+    )
+  }
+)
 
 function ColorPalette24({
+  anchor,
   currentColor,
   onSelect,
   onClose,
 }: {
+  anchor: DOMRect
   currentColor: string | null | undefined
   onSelect: (color: string | null) => void
   onClose: () => void
@@ -68,24 +74,32 @@ function ColorPalette24({
       if (ref.current && !ref.current.contains(e.target as Node)) onClose()
     }
     document.addEventListener('mousedown', handleClick)
-    return () => document.removeEventListener('mousedown', handleClick)
+    window.addEventListener('scroll', onClose, true)
+    window.addEventListener('resize', onClose)
+    return () => {
+      document.removeEventListener('mousedown', handleClick)
+      window.removeEventListener('scroll', onClose, true)
+      window.removeEventListener('resize', onClose)
+    }
   }, [onClose])
 
-  return (
+  const width = 176
+  const left = Math.min(anchor.left, window.innerWidth - width - 12)
+
+  return createPortal(
     <div
       ref={ref}
       style={{
-        position: 'absolute',
-        top: '100%',
-        left: 0,
-        zIndex: 60,
+        position: 'fixed',
+        top: anchor.bottom + 4,
+        left,
+        zIndex: 1000,
         background: T.card,
         border: `1px solid ${T.cardBorder}`,
         borderRadius: 8,
         boxShadow: '0 4px 12px rgba(0,0,0,.14)',
         padding: 10,
-        marginTop: 4,
-        minWidth: 176,
+        minWidth: width,
       }}
     >
       <div style={{ fontSize: 10.5, fontWeight: 600, color: T.textFaint, marginBottom: 8, letterSpacing: '.05em', textTransform: 'uppercase' }}>
@@ -137,7 +151,8 @@ function ColorPalette24({
           )
         })}
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 
@@ -213,9 +228,10 @@ export default function Column({ column, onDeleteColumn, onRenameColumn, onSelec
   const [submitting, setSubmitting] = useState(false)
   const [renaming, setRenaming] = useState(false)
   const [renameVal, setRenameVal] = useState(column.name)
-  const [paletteOpen, setPaletteOpen] = useState(false)
+  const [paletteAnchor, setPaletteAnchor] = useState<DOMRect | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const renameRef = useRef<HTMLInputElement>(null)
+  const swatchRef = useRef<HTMLButtonElement>(null)
 
   const themeName = useThemeStore(s => s.theme)
   const glass = THEMES[themeName].glass
@@ -230,7 +246,7 @@ export default function Column({ column, onDeleteColumn, onRenameColumn, onSelec
 
   async function handleColorSelect(newColor: string | null) {
     const prevColor = column.headerColor ?? null
-    setPaletteOpen(false)
+    setPaletteAnchor(null)
     updateColumnColor(column.id, newColor)
     try {
       await api.patch(`/api/v1/columns/${column.id}`, { color: newColor })
@@ -318,7 +334,6 @@ export default function Column({ column, onDeleteColumn, onRenameColumn, onSelec
         touchAction: 'none',
         backdropFilter: glass ? 'blur(16px) saturate(130%)' : undefined,
         position: 'relative',
-        zIndex: paletteOpen ? 20 : undefined,
       }}
     >
       {/* Header */}
@@ -379,15 +394,17 @@ export default function Column({ column, onDeleteColumn, onRenameColumn, onSelec
         {!renaming && (
           <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
             <ColorSwatch24Button
+              ref={swatchRef}
               color={column.headerColor}
               ringColor={hc.faint}
-              onClick={() => { if (canEdit) setPaletteOpen(true) }}
+              onClick={() => { if (canEdit) setPaletteAnchor(swatchRef.current?.getBoundingClientRect() ?? null) }}
             />
-            {paletteOpen && (
+            {paletteAnchor && (
               <ColorPalette24
+                anchor={paletteAnchor}
                 currentColor={column.headerColor}
                 onSelect={handleColorSelect}
-                onClose={() => setPaletteOpen(false)}
+                onClose={() => setPaletteAnchor(null)}
               />
             )}
           </div>
